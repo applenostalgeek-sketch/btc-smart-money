@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Money vs The Tide — BTC</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --accent: #38bdf8;
+            --green:  #4ade80;
+            --red:    #f87171;
+            --gold:   #f59e0b;
+            --text:   #e2e8f0;
+            --dim:    #64748b;
+        }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #060910; }
+        #ocean { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+
+        /* ── TITLE top-left ── */
+        #title-area {
+            position: fixed; top: 22px; left: 28px; z-index: 10;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+        }
+        #title-area h1 { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.55); letter-spacing: -0.2px; }
+        #title-area p  { font-size: 10px; color: rgba(100,116,139,0.6); margin-top: 2px; }
+        #last-updated {
+            position: fixed; bottom: 16px; right: 20px; z-index: 10;
+            font-family: -apple-system, sans-serif;
+            font-size: 9px; color: rgba(100,116,139,0.4);
+            text-align: right; line-height: 1.5;
+        }
+
+        /* ── LEGEND top-right ── */
+        #legend {
+            position: fixed; top: 22px; right: 24px; z-index: 10;
+            display: flex; flex-direction: column; gap: 6px;
+            font-family: -apple-system, sans-serif;
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: rgba(148,163,184,0.45); }
+        .legend-dot  { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+        /* ── INFO CARD bottom-left ── */
+        #info-card {
+            position: fixed; bottom: 28px; left: 28px; width: 320px; z-index: 10;
+            background: rgba(4, 8, 18, 0.86);
+            backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 22px; padding: 18px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            color: var(--text);
+        }
+        .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+        .live-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 8px var(--green);
+            animation: pulse 2s infinite; flex-shrink: 0;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        #signal-badge { font-size: 13px; font-weight: 700; }
+
+        /* ── VS ROW ── */
+        .vs-row {
+            display: grid; grid-template-columns: 1fr auto 1fr;
+            gap: 0; margin-bottom: 14px; align-items: center;
+        }
+        .vs-side {
+            padding: 12px 10px; border-radius: 14px; text-align: center;
+        }
+        .vs-side.retail       { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.12); }
+        .vs-side.retail.greed { background: rgba(74,222,128,0.07);  border: 1px solid rgba(74,222,128,0.12); }
+        .vs-side.smart        { background: rgba(74,222,128,0.07);  border: 1px solid rgba(74,222,128,0.12); }
+        .vs-side.smart.bear   { background: rgba(248,113,113,0.07); border: 1px solid rgba(248,113,113,0.12); }
+
+        .vs-emoji  { font-size: 22px; line-height: 1; margin-bottom: 4px; }
+        .vs-label  { font-size: 8px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--dim); margin-bottom: 6px; }
+        .vs-value  { font-size: 28px; font-weight: 900; letter-spacing: -1px; line-height: 1; margin-bottom: 2px; }
+        .vs-unit   { font-size: 10px; color: var(--dim); margin-bottom: 6px; }
+        .vs-zone   {
+            font-size: 9px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; padding: 3px 7px; border-radius: 20px;
+            display: inline-block;
+        }
+        .vs-zone.fear   { background: rgba(248,113,113,0.15); color: #f87171; }
+        .vs-zone.greed  { background: rgba(74,222,128,0.15);  color: #4ade80; }
+        .vs-zone.neutral{ background: rgba(148,163,184,0.12); color: #94a3b8; }
+        .vs-zone.buy    { background: rgba(74,222,128,0.15);  color: #4ade80; }
+        .vs-zone.sell   { background: rgba(248,113,113,0.15); color: #f87171; }
+
+        .vs-divider {
+            font-size: 11px; font-weight: 800; color: rgba(255,255,255,0.2);
+            letter-spacing: 1px; padding: 0 8px; text-align: center;
+        }
+
+        /* ── VERDICT TEXT ── */
+        #verdict {
+            font-size: 12.5px; line-height: 1.6; color: #7d94b0;
+            margin-bottom: 13px; padding: 10px 12px;
+            background: rgba(255,255,255,0.03); border-radius: 10px;
+        }
+
+        /* ── DETAILS LINK ── */
+        .details-link {
+            display: block; text-align: center; font-size: 12px; font-weight: 600;
+            color: var(--accent); text-decoration: none; padding: 8px;
+            border: 1px solid rgba(56,189,248,0.18); border-radius: 10px;
+            transition: background 0.2s;
+        }
+        .details-link:hover { background: rgba(56,189,248,0.07); }
+
+        /* ── MOBILE HANDLE ── */
+        .mobile-handle {
+            display: none;
+            justify-content: center; padding: 6px 0 2px;
+            cursor: pointer;
+        }
+        .handle-bar {
+            width: 36px; height: 4px; border-radius: 2px;
+            background: rgba(255,255,255,0.18);
+        }
+
+        /* ── MOBILE ── */
+        @media (max-width: 600px) {
+            #info-card {
+                bottom: 0; left: 0; right: 0; width: auto;
+                border-radius: 20px 20px 0 0;
+                transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+            }
+            #info-card.collapsed {
+                /* show only handle + badge row (≈52px) */
+                transform: translateY(calc(100% - 52px));
+            }
+            .mobile-handle { display: flex; }
+            #title-area, #legend { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="ocean"></canvas>
+
+<div id="last-updated">—</div>
+
+<div id="title-area">
+    <h1>Smart Money vs The Tide</h1>
+    <p>Bitcoin — divergence institutionnel / retail</p>
+</div>
+
+<div id="legend">
+    <div class="legend-item">
+        <div class="legend-dot" style="background:rgba(56,189,248,0.85)"></div>
+        Poissons = smart money
+    </div>
+    <div class="legend-item">
+        <div class="legend-dot" style="background:rgba(150,150,255,0.5)"></div>
+        Courant = sentiment retail
+    </div>
+</div>
+
+<div id="info-card" class="collapsed">
+    <div class="mobile-handle" id="mobile-handle">
+        <div class="handle-bar"></div>
+    </div>
+    <div class="card-top" id="card-toggle">
+        <div class="live-dot" id="live-dot"></div>
+        <span id="signal-badge" style="color:#64748b">Chargement…</span>
+    </div>
+
+    <!-- RETAIL  VS  SMART MONEY -->
+    <div class="vs-row">
+        <div class="vs-side retail" id="retail-side">
+            <div class="vs-emoji" id="retail-emoji">😐</div>
+            <div class="vs-label">Retail perps</div>
+            <div class="vs-value" id="retail-val" style="color:#94a3b8">--</div>
+            <div class="vs-unit" id="retail-unit">OI total</div>
+            <span class="vs-zone neutral" id="retail-zone">--</span>
+        </div>
+        <div class="vs-divider">VS</div>
+        <div class="vs-side smart" id="smart-side">
+            <div class="vs-emoji" id="smart-emoji">🏦</div>
+            <div class="vs-label">Smart Money</div>
+            <div class="vs-value" id="smart-val" style="color:#94a3b8">--</div>
+            <div class="vs-unit" id="smart-unit">M$ / 7j</div>
+            <span class="vs-zone buy" id="smart-zone">--</span>
+        </div>
+    </div>
+
+    <p id="verdict">Connexion aux données en cours…</p>
+    <a href="details.html" class="details-link">Voir l'analyse complète →</a>
+</div>
+
+<!-- ================================================================
+     CANVAS — Full-screen aquarium
+================================================================ -->
+<script>
+const canvas = document.getElementById('ocean');
+const ctx    = canvas.getContext('2d');
+let time = 0;
+let currentFG = 50;
+let btcNeonText = ''; // shown as neon behind fish
+
+function resizeCanvas() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', () => {
+    resizeCanvas();
+    fishArr.forEach(f => f.clampY());
+});
+
+// ── Fish ─────────────────────────────────────────────────────
+let FISH_COUNT = 14; // dynamique selon ETF flows, 14 = neutre par défaut
+const fishArr  = [];
+
+function setFishCount(etfNet7) {
+    // -500M$ → 6 poissons, 0 → 14, +1000M$ → 26
+    const target = Math.round(Math.min(26, Math.max(6, 14 + (etfNet7 / 1000) * 12)));
+    while (fishArr.length < target) fishArr.push(new Fish());
+    if (fishArr.length > target) fishArr.splice(target);
+    FISH_COUNT = target;
+}
+
+class Fish {
+    constructor() {
+        this.depth     = 0.25 + Math.random() * 0.75;
+        this.x         = Math.random() * (canvas.width  || 1200);
+        this.baseY     = 70 + Math.random() * ((canvas.height || 700) - 140);
+        this.yOffset   = 0;
+        this.yDrift    = (Math.random() - 0.5) * 0.18;
+        this.tailPhase = Math.random() * Math.PI * 2;
+        this.tailSpeed = 0.055 + Math.random() * 0.04;
+        this.size      = 10 + this.depth * 20;
+        this.speed     = 0.28 + this.depth * 0.55;
+        this.opacity   = 0.3 + this.depth * 0.65;
+    }
+    clampY() {
+        const h = canvas.height || 700;
+        this.baseY = Math.max(70, Math.min(this.baseY, h - 70));
+    }
+    getDir() {
+        if (currentFG <= 35) return 1;
+        if (currentFG >= 65) return -1;
+        return Math.sin(this.tailPhase * 0.3 + this.depth * 5) > 0 ? 1 : -1;
+    }
+    update() {
+        const dir = this.getDir();
+        this.x += this.speed * dir;
+        this.yOffset += this.yDrift;
+        if (Math.abs(this.yOffset) > 20) this.yDrift *= -1;
+        this.tailPhase += this.tailSpeed;
+        const w = canvas.width || 1200;
+        if (dir > 0 && this.x >  w + 90) this.x = -90;
+        if (dir < 0 && this.x < -90) this.x = w + 90;
+    }
+    draw() {
+        const dir = this.getDir();
+        const x = this.x, y = this.baseY + this.yOffset;
+        const s = this.size, t = this.tailPhase;
+        let bodyCol, finCol;
+        if (currentFG <= 30)       { bodyCol = '#38bdf8'; finCol = '#0369a1'; }
+        else if (currentFG >= 70)  { bodyCol = '#fbbf24'; finCol = '#b45309'; }
+        else                        { bodyCol = '#86efac'; finCol = '#15803d'; }
+
+        ctx.save();
+        ctx.translate(x, y);
+        if (dir < 0) ctx.scale(-1, 1);
+
+        // Opaque dark backing — blocks neon glow from bleeding through the fish
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.ellipse(-s * 0.08, 0, s * 0.98, s * 0.55, 0, 0, Math.PI * 2);
+        ctx.fillStyle = '#020b17';
+        ctx.fill();
+
+        ctx.globalAlpha = this.opacity;
+
+        // Tail — rotation pivot
+        const pivotX    = -s * 0.72;
+        const tailAngle = Math.sin(t) * 0.22 + Math.sin(t * 2) * 0.04;
+        ctx.save();
+        ctx.translate(pivotX, 0); ctx.rotate(tailAngle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-s * 0.72, -s * 0.46);
+        ctx.lineTo(-s * 0.72,  s * 0.46);
+        ctx.closePath(); ctx.fillStyle = finCol; ctx.fill();
+        ctx.restore();
+
+        // Body
+        ctx.beginPath();
+        ctx.ellipse(-s * 0.08, 0, s * 0.82, s * 0.38, 0, 0, Math.PI * 2);
+        ctx.fillStyle = bodyCol; ctx.fill();
+
+        // Dorsal fin
+        ctx.beginPath();
+        ctx.moveTo(s * 0.1, -s * 0.36);
+        ctx.quadraticCurveTo(s * 0.22, -s * 0.78, s * 0.52, -s * 0.38);
+        ctx.strokeStyle = finCol; ctx.lineWidth = 1.5; ctx.stroke();
+
+        // Eye
+        ctx.beginPath(); ctx.arc(s * 0.5, -s * 0.06, s * 0.12, 0, Math.PI * 2);
+        ctx.fillStyle = '#0f172a'; ctx.fill();
+        ctx.beginPath(); ctx.arc(s * 0.47, -s * 0.09, s * 0.05, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.fill();
+
+        ctx.restore();
+    }
+}
+for (let i = 0; i < FISH_COUNT; i++) fishArr.push(new Fish());
+
+// ── Bubbles ─────────────────────────────────────────────────
+const bubbles = Array.from({length: 35}, () => ({
+    x: Math.random() * 1200, y: Math.random() * 800,
+    r: 1 + Math.random() * 3,
+    speed: 0.18 + Math.random() * 0.45,
+    drift: (Math.random() - 0.5) * 0.22,
+    opacity: 0.05 + Math.random() * 0.12,
+}));
+function updateBubbles() {
+    const w = canvas.width || 1200, h = canvas.height || 700;
+    bubbles.forEach(b => {
+        b.y -= b.speed; b.x += b.drift;
+        if (b.y < -10) { b.y = h + 5; b.x = Math.random() * w; }
+        if (b.x < 0) b.x = w; if (b.x > w) b.x = 0;
+    });
+}
+function drawBubbles() {
+    bubbles.forEach(b => {
+        ctx.save(); ctx.globalAlpha = b.opacity;
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(148,210,255,0.7)'; ctx.lineWidth = 0.8; ctx.stroke();
+        ctx.restore();
+    });
+}
+
+// ── BTC Neon Price ───────────────────────────────────────────
+// Drawn before fish — glows through the water like a neon sign behind glass
+function drawBTCNeon() {
+    if (!btcNeonText) return;
+    const w = canvas.width || 1200, h = canvas.height || 700;
+
+    const fontSize = Math.max(26, Math.min(w / 14, 88));
+    ctx.save();
+    ctx.font = `900 ${fontSize}px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Subtle breathing pulse
+    const pulse = 0.038 + Math.sin(time * 0.55) * 0.01;
+
+    // Outer glow
+    ctx.globalAlpha = pulse * 0.45;
+    ctx.shadowColor = '#f59e0b';
+    ctx.shadowBlur  = 45;
+    ctx.fillStyle   = '#f59e0b';
+    ctx.fillText(btcNeonText, w / 2, h * 0.46);
+
+    // Inner glow
+    ctx.globalAlpha = pulse;
+    ctx.shadowBlur  = 18;
+    ctx.fillText(btcNeonText, w / 2, h * 0.46);
+
+    ctx.restore();
+}
+
+// ── Ocean background ─────────────────────────────────────────
+function drawOcean() {
+    const w = canvas.width || 1200, h = canvas.height || 700;
+
+    const bg = ctx.createLinearGradient(0, 0, 0, h);
+    bg.addColorStop(0,   '#030b18');
+    bg.addColorStop(0.45,'#040d1c');
+    bg.addColorStop(0.85,'#030b18');
+    bg.addColorStop(1,   '#010609');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+
+    // Light rays
+    ctx.save();
+    for (let i = 0; i < 8; i++) {
+        const rx = w * 0.04 + i * w * 0.13 + Math.sin(time * 0.14 + i * 1.2) * 28;
+        const rg = ctx.createLinearGradient(rx, 0, rx + 55, h);
+        rg.addColorStop(0,   'rgba(40,120,210,0.04)');
+        rg.addColorStop(0.5, 'rgba(20,80,160,0.012)');
+        rg.addColorStop(1,   'rgba(0,0,0,0)');
+        ctx.fillStyle = rg;
+        ctx.beginPath();
+        ctx.moveTo(rx - 10, 0); ctx.lineTo(rx + 65, h); ctx.lineTo(rx - 32, h);
+        ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+
+    // Water current
+    const retailDir = currentFG <= 40 ? -1 : currentFG >= 60 ? 1 : 0;
+    const strength  = Math.abs(currentFG - 50) / 50;
+
+    if (retailDir !== 0) {
+        ctx.save();
+        const baseColor = retailDir < 0 ? '56,189,248' : '248,113,113';
+        // Streaks / current lines
+        for (let row = 0; row < 11; row++) {
+            const baseY = h / 11 * (row + 0.5);
+            const numL  = 3 + Math.floor(strength * 4);
+            for (let l = 0; l < numL + 2; l++) {
+                const rawX = ((time * 48 * retailDir + l * (w / numL)) % w + w) % w;
+                const la   = 0.055 + strength * 0.09;
+                const ll   = 70 + strength * 55;
+                ctx.globalAlpha = la;
+                ctx.beginPath();
+                ctx.moveTo(rawX, baseY + Math.sin(rawX * 0.02 + time) * 5);
+                for (let step = 0; step <= ll; step += 7) {
+                    const lx = rawX + step * retailDir;
+                    ctx.lineTo((lx + w) % w, baseY + Math.sin((rawX + step) * 0.025 + time * 1.5) * 5);
+                }
+                ctx.strokeStyle = `rgba(${baseColor},${la})`; ctx.lineWidth = 1; ctx.stroke();
+            }
+        }
+        // Arrow heads — quelques-unes seulement, bien espacées
+        const aa = 0.13 + strength * 0.12;
+        for (let a = 0; a < 7; a++) {
+            const ax = ((time * 40 * retailDir + a * (w / 6)) % w + w) % w;
+            const ay = h * 0.18 + a * (h * 0.65 / 6);
+            const as = 6 + strength * 3;
+            ctx.globalAlpha = aa;
+            ctx.beginPath();
+            if (retailDir > 0) { ctx.moveTo(ax-as, ay-as*0.6); ctx.lineTo(ax, ay); ctx.lineTo(ax-as, ay+as*0.6); }
+            else               { ctx.moveTo(ax+as, ay-as*0.6); ctx.lineTo(ax, ay); ctx.lineTo(ax+as, ay+as*0.6); }
+            ctx.strokeStyle = retailDir < 0 ? '#38bdf8' : '#f87171';
+            ctx.lineWidth = 1.5; ctx.lineJoin = 'round'; ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    // Depth lines
+    ctx.save(); ctx.globalAlpha = 0.018;
+    for (let row = 1; row < 9; row++) {
+        ctx.beginPath(); ctx.moveTo(0, h/9*row); ctx.lineTo(w, h/9*row);
+        ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1; ctx.stroke();
+    }
+    ctx.restore();
+}
+
+// ── Animation loop ───────────────────────────────────────────
+function animate() {
+    time += 0.016;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawOcean();
+    drawBTCNeon();          // neon price BEHIND fish
+    updateBubbles(); drawBubbles();
+    fishArr.forEach(f => { f.update(); f.draw(); });
+    requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+<!-- ================================================================
+     DATA
+================================================================ -->
+<script>
+async function fetchWithTimeout(url, ms = 12000) {
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), ms);
+    try { const r = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid); return r; }
+    catch(e) { clearTimeout(tid); throw e; }
+}
+
+// ── Binance Perps : Open Interest + Funding Rate ─────────────
+// OI = vrai argent engagé par le retail en spéculation levier
+// Funding rate > 0 = retail net long (paie les shorts)
+// Funding rate < 0 = retail net short (reçoit paiement)
+async function fetchPerpsData() {
+    const [oiR, fundR] = await Promise.all([
+        fetchWithTimeout('https://fapi.binance.com/futures/data/openInterestHist?symbol=BTCUSDT&period=1d&limit=30', 10000),
+        fetchWithTimeout('https://fapi.binance.com/fapi/v1/fundingRate?symbol=BTCUSDT&limit=10', 10000),
+    ]);
+    if (!oiR.ok || !fundR.ok) throw new Error(`Binance ${oiR.status}/${fundR.status}`);
+
+    const oiHist  = await oiR.json();   // array, newest last
+    const funding = await fundR.json(); // array, newest last
+
+    const oiNow   = parseFloat(oiHist[oiHist.length - 1].sumOpenInterestValue);
+    const oi7dAgo = parseFloat(oiHist[Math.max(0, oiHist.length - 8)].sumOpenInterestValue);
+    const oiChange7d = oi7dAgo > 0 ? (oiNow - oi7dAgo) / oi7dAgo : 0;
+
+    // Average of last 3 funding periods (= last 24h)
+    const last3    = funding.slice(-3);
+    const avgFund  = last3.reduce((s, f) => s + parseFloat(f.fundingRate), 0) / last3.length;
+
+    return { oiUSD: oiNow, oiChange7d, avgFunding: avgFund, history: oiHist };
+}
+
+async function fetchBTCCurrent() {
+    try {
+        const r = await fetchWithTimeout('https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC&tsyms=USD', 10000);
+        const d = await r.json();
+        const raw = d.RAW?.BTC?.USD;
+        return { usd: raw.PRICE, change24h: raw.CHANGEPCT24HOUR };
+    } catch {
+        try {
+            const r = await fetchWithTimeout('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true', 10000);
+            const d = await r.json();
+            return { usd: d.bitcoin.usd, change24h: d.bitcoin.usd_24h_change };
+        } catch { return { usd: 0, change24h: 0 }; }
+    }
+}
+
+async function fetchLocalJSON(path) {
+    try {
+        const r = await fetchWithTimeout(path, 6000);
+        if (!r.ok) return null;
+        return await r.json();
+    } catch { return null; }
+}
+
+// ── Perps signal ──────────────────────────────────────────────
+// Valeurs réelles Binance : funding typiquement ±0.00001 à ±0.0005
+// Seuil "net directional" à ±0.000015 (= ±0.0015% par 8h)
+function perpsSignal(perps) {
+    if (!perps) return { word: 'N/A', emoji: '❓', zone: 'neutral', color: '#475569', sentiment: 50 };
+    const { oiChange7d, avgFunding } = perps;
+    const netLong  = avgFunding >  0.000015;  // plus de longs que de shorts
+    const netShort = avgFunding < -0.000015;  // plus de shorts que de longs
+    const oiUp     = oiChange7d >  0.05;      // retail ouvre des positions (+5%)
+    const oiDown   = oiChange7d < -0.05;      // retail ferme des positions (-5%)
+
+    // Cas clairs — OI monte ET direction claire
+    if (oiUp && netShort) return { word: 'SHORTS ↓', emoji: '🐻', zone: 'fear',    color: '#f87171', sentiment: 22 };
+    if (oiUp && netLong)  return { word: 'LONGS ↑',  emoji: '🔥', zone: 'greed',   color: '#fb923c', sentiment: 75 };
+    // Retail ferme ses positions
+    if (oiDown)           return { word: 'DÉBOUCLE',  emoji: '📉', zone: 'neutral', color: '#94a3b8', sentiment: 40 };
+    // Biais directionnel sans mouvement fort d'OI
+    if (netShort)         return { word: 'BIAIS ↓',   emoji: '😟', zone: 'fear',   color: '#f87171', sentiment: 35 };
+    if (netLong)          return { word: 'BIAIS ↑',   emoji: '😏', zone: 'greed',  color: '#fb923c', sentiment: 65 };
+    return                       { word: 'NEUTRE',    emoji: '😐', zone: 'neutral', color: '#94a3b8', sentiment: 50 };
+}
+
+// Anime les poissons selon le sentiment retail réel
+function perpsToPseudoFG(perps) {
+    return perpsSignal(perps).sentiment;
+}
+
+// ── Signal global — texte "ah oui" immédiat ───────────────────
+function computeVerdict(perps, etfNet7) {
+    if (!perps) return { badge: '…', color: '#94a3b8', text: 'Connexion aux marchés…' };
+
+    const sig       = perpsSignal(perps);
+    const etfBuying = etfNet7 !== null && etfNet7 >  100;
+    const etfSelling= etfNet7 !== null && etfNet7 < -100;
+    const etfM      = etfNet7 !== null ? `$${Math.abs(Math.round(etfNet7))}M` : null;
+    const isShort   = sig.word === 'SHORTS ↓' || sig.word === 'BIAIS ↓';
+    const isLong    = sig.word === 'LONGS ↑'  || sig.word === 'BIAIS ↑';
+    const oiPct     = (Math.abs(perps.oiChange7d) * 100).toFixed(0) + '%';
+
+    // ⚡ LE signal le plus fort : retail parie À LA BAISSE + institutions achètent
+    if (isShort && etfBuying) return {
+        badge: '⚡ Signal haussier contrarian',
+        color: '#4ade80',
+        text: `Le retail a ouvert ${oiPct} de paris baissiers en plus cette semaine. En face, les institutions ont acheté ${etfM} de vrai Bitcoin via les ETFs. Historiquement : quand le retail est short et les institutionnels achètent, le prix monte et les shorts se font liquider.`,
+    };
+    // ⚠️ Retail parie À LA HAUSSE + institutions vendent
+    if (isLong && etfSelling) return {
+        badge: '⚠️ Signal baissier contrarian',
+        color: '#f87171',
+        text: `Le retail a ouvert ${oiPct} de paris haussiers en plus. En face, les institutions sortent (${etfM} de sorties ETF). Quand retail et institutionnels vont dans des sens opposés comme ça, le retail a souvent tort.`,
+    };
+    // Retail short, mais institutions pas vraiment actives
+    if (isShort) return {
+        badge: '👀 Retail baissier — surveiller les ETFs',
+        color: '#fbbf24',
+        text: `Le retail parie à la baisse (${oiPct} de positions shorts supplémentaires). Les ETFs ne montrent pas encore de signal institutionnel fort. Surveiller si les institutions commencent à acheter.`,
+    };
+    // Retail long, institutions aussi
+    if (isLong && etfBuying) return {
+        badge: '🌡️ Tout le monde achète',
+        color: '#fb923c',
+        text: `Retail et institutions sont tous les deux haussiers (ETF +${etfM}, OI +${oiPct} en longs). Attention : quand tout le monde est du même côté, le retournement peut être violent.`,
+    };
+    // Retail ferme ses positions
+    if (sig.word === 'DÉBOUCLE') return {
+        badge: '📉 Retail déboucle',
+        color: '#94a3b8',
+        text: `Le retail réduit ses positions (-${oiPct} d'OI en 7j). ${etfBuying ? `Les institutions continuent d'acheter (ETF +${etfM}). Signe de stabilisation possible.` : 'Attendre un signal institutionnel clair.'}`,
+    };
+    return {
+        badge: '〰️ Pas de signal clair',
+        color: '#94a3b8',
+        text: `Retail et institutions ne montrent pas de divergence nette cette semaine. OI ${perps.oiChange7d >= 0 ? '+' : ''}${(perps.oiChange7d*100).toFixed(1)}%, ETF ${etfNet7 !== null ? (etfNet7 >= 0 ? '+' : '') + '$' + Math.round(etfNet7) + 'M' : 'N/A'} / 7j.`,
+    };
+}
+
+// ── Update overlay card ──────────────────────────────────────
+function updateOverlay(perps, btc, cotRaw, etf) {
+    currentFG = perpsToPseudoFG(perps);
+    if (btc.usd > 0) btcNeonText = '$' + Math.round(btc.usd).toLocaleString('en-US');
+    if (etf?.net_7d != null) setFishCount(etf.net_7d);
+
+    // Timestamp bas-droite — source la plus récente
+    const lu = etf?.last_updated || cot?.last_updated || null;
+    if (lu) document.getElementById('last-updated').textContent = 'ETF : ' + lu;
+
+    const etfNet7 = etf?.net_7d ?? null;
+    const verdict = computeVerdict(perps, etfNet7);
+    document.getElementById('signal-badge').textContent = verdict.badge;
+    document.getElementById('signal-badge').style.color = verdict.color;
+    document.getElementById('live-dot').style.background = verdict.color;
+    document.getElementById('live-dot').style.boxShadow  = `0 0 8px ${verdict.color}`;
+    document.getElementById('verdict').textContent = verdict.text;
+
+    // ── RETAIL SIDE ──
+    const retailSide = document.getElementById('retail-side');
+    const retailVal  = document.getElementById('retail-val');
+    const retailZone = document.getElementById('retail-zone');
+
+    if (perps) {
+        const sig = perpsSignal(perps);
+        const oiPct = (perps.oiChange7d >= 0 ? '+' : '') + (perps.oiChange7d * 100).toFixed(1) + '%';
+        const fundPct = (perps.avgFunding >= 0 ? '+' : '') + (perps.avgFunding * 100).toFixed(4) + '%/8h';
+        document.getElementById('retail-emoji').textContent = sig.emoji;
+        retailVal.textContent   = sig.word;
+        retailVal.style.color   = sig.color;
+        retailVal.style.fontSize = '17px';
+        document.getElementById('retail-unit').textContent = `OI ${oiPct} · fund ${fundPct}`;
+        retailZone.textContent  = perps.oiUSD >= 1e9
+            ? '$' + (perps.oiUSD / 1e9).toFixed(1) + 'Mds engagés'
+            : '$' + (perps.oiUSD / 1e6).toFixed(0) + 'M engagés';
+        retailZone.className    = `vs-zone ${sig.zone}`;
+        retailSide.classList.toggle('greed', sig.zone === 'greed');
+    } else {
+        retailVal.textContent  = 'N/A';
+        retailZone.textContent = 'Binance indisponible';
+        retailZone.className   = 'vs-zone neutral';
+    }
+
+    // ── SMART MONEY SIDE ──
+    const smartVal   = document.getElementById('smart-val');
+    const smartUnit  = document.getElementById('smart-unit');
+    const smartZone  = document.getElementById('smart-zone');
+    const smartEmoji = document.getElementById('smart-emoji');
+    const smartSide  = document.getElementById('smart-side');
+
+    if (etfNet7 !== null) {
+        const sign = etfNet7 >= 0 ? '+' : '';
+        const col  = etfNet7 > 100 ? '#4ade80' : etfNet7 < -100 ? '#f87171' : '#94a3b8';
+        const zone = etfNet7 > 500 ? 'Afflux massif' : etfNet7 > 100 ? 'Achètent' : etfNet7 < -500 ? 'Fuite massive' : etfNet7 < -100 ? 'Vendent' : 'Neutre';
+        const zCls = etfNet7 > 100 ? 'buy' : etfNet7 < -100 ? 'sell' : 'neutral';
+        smartEmoji.textContent = etfNet7 >= 100 ? '🏦' : etfNet7 <= -100 ? '🚨' : '🏦';
+        smartVal.textContent   = sign + '$' + Math.round(Math.abs(etfNet7)) + 'M';
+        smartVal.style.color   = col;
+        smartVal.style.fontSize = '';
+        smartUnit.textContent  = 'achetés en 7j (ETF spot)';
+        smartZone.textContent  = zone;
+        smartZone.className    = `vs-zone ${zCls}`;
+        smartSide.classList.toggle('bear', etfNet7 < -100);
+    } else if (cotRaw?.inst_net !== undefined) {
+        const net = cotRaw.inst_net;
+        smartEmoji.textContent = '🐟';
+        smartVal.textContent   = (net >= 0 ? '+' : '') + net.toLocaleString();
+        smartVal.style.color   = net > 0 ? '#4ade80' : net < 0 ? '#f87171' : '#94a3b8';
+        smartUnit.textContent  = 'contrats HF (COT CFTC)';
+        smartZone.textContent  = net > 0 ? 'Nets longs' : 'Nets courts';
+        smartZone.className    = `vs-zone ${net > 0 ? 'buy' : 'sell'}`;
+    } else {
+        smartVal.textContent  = 'N/A';
+        smartUnit.textContent = 'données manquantes';
+        smartZone.textContent = '—';
+        smartZone.className   = 'vs-zone neutral';
+    }
+}
+
+// ── Init ─────────────────────────────────────────────────────
+async function init() {
+    try {
+        const [perps, btc, cot, etf] = await Promise.all([
+            fetchPerpsData(),
+            fetchBTCCurrent(),
+            fetchLocalJSON('data/cot_data.json'),
+            fetchLocalJSON('data/etf_flows.json'),
+        ]);
+        updateOverlay(perps, btc, cot, etf);
+    } catch(err) {
+        console.error('Init error:', err);
+        document.getElementById('signal-badge').textContent = '⚠️ Erreur';
+        document.getElementById('verdict').textContent = 'Impossible de charger les données.';
+    }
+}
+init();
+</script>
+
+<!-- Mobile card toggle -->
+<script>
+(function() {
+    const card   = document.getElementById('info-card');
+    const handle = document.getElementById('mobile-handle');
+    const toggle = document.getElementById('card-toggle');
+
+    function isMobile() { return window.innerWidth <= 600; }
+
+    // Start collapsed on mobile, open on desktop
+    if (!isMobile()) card.classList.remove('collapsed');
+
+    function doToggle() {
+        if (!isMobile()) return;
+        card.classList.toggle('collapsed');
+    }
+
+    handle.addEventListener('click', doToggle);
+    toggle.addEventListener('click', doToggle);
+
+    // Re-evaluate on resize
+    window.addEventListener('resize', () => {
+        if (!isMobile()) card.classList.remove('collapsed');
+    });
+})();
+</script>
+</body>
+</html>

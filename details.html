@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse complète — Smart Money vs The Tide</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:  #060910;
+            --bg2: #0c1220;
+            --bg3: #111827;
+            --accent: #38bdf8;
+            --gold:   #f59e0b;
+            --green:  #4ade80;
+            --red:    #f87171;
+            --text:   #e2e8f0;
+            --dim:    #64748b;
+            --border: rgba(255,255,255,0.07);
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ── BACK HEADER ── */
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 28px; border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 20;
+            background: rgba(6,9,16,0.92);
+            backdrop-filter: blur(16px);
+        }
+        .back-link {
+            color: var(--accent); text-decoration: none;
+            font-size: 13px; font-weight: 600;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .back-link:hover { opacity: 0.8; }
+        .topbar-title { font-size: 14px; color: var(--dim); }
+
+        /* ── SIGNAL BANNER ── */
+        .signal-banner {
+            max-width: 1200px; margin: 20px auto; padding: 0 20px;
+        }
+        .signal-pill {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 50px; padding: 10px 20px;
+            font-size: 13px; font-weight: 600;
+        }
+        .live-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--green); box-shadow: 0 0 6px var(--green);
+            animation: pulse 2s infinite; flex-shrink: 0;
+        }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+        /* ── METRICS ROW ── */
+        .metrics {
+            display: grid; grid-template-columns: repeat(4,1fr);
+            gap: 12px; padding: 12px 20px;
+            max-width: 1200px; margin: 0 auto;
+        }
+        @media (max-width: 720px) { .metrics { grid-template-columns: repeat(2,1fr); } }
+
+        .card {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 16px; padding: 18px;
+        }
+        .card-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--dim); margin-bottom: 10px; }
+        .card-value { font-size: 34px; font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 6px; }
+        .card-sub   { font-size: 13px; font-weight: 600; }
+        .card-foot  { font-size: 11px; color: var(--dim); margin-top: 4px; }
+
+        /* ── SECTIONS ── */
+        .section {
+            max-width: 1200px; margin: 8px auto 0;
+            padding: 0 20px 40px;
+        }
+        .section-title { font-size: 19px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.4px; }
+        .section-sub   { font-size: 13px; color: var(--dim); margin-bottom: 18px; line-height: 1.65; }
+        .section-sub a  { color: var(--accent); text-decoration: none; }
+
+        .chart-box {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 16px; padding: 22px; margin-bottom: 14px;
+        }
+        .chart-legend { display: flex; gap: 18px; margin-bottom: 14px; flex-wrap: wrap; }
+        .chart-legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--dim); }
+        .chart-legend-line { width: 22px; height: 2px; border-radius: 2px; }
+
+        .loading-msg { text-align: center; padding: 56px 20px; color: var(--dim); font-size: 14px; }
+        .loading-msg .spinner {
+            display: inline-block; width: 26px; height: 26px;
+            border: 2px solid var(--border); border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── STAT CARDS ── */
+        .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+        @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
+        .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 18px; }
+        .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--dim); margin-bottom: 8px; }
+        .stat-value { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+        .stat-sub   { font-size: 11px; color: var(--dim); margin-top: 3px; }
+
+        /* ── TRADES TABLE ── */
+        .trades-section { margin-top: 22px; }
+        .trades-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; color: var(--dim); }
+        .trades-table { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+        .trades-table table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .trades-table th { padding: 11px 14px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); border-bottom: 1px solid var(--border); font-weight: 600; }
+        .trades-table td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .trades-table tr:last-child td { border-bottom: none; }
+        .trades-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .win  { color: var(--green); font-weight: 600; }
+        .loss { color: var(--red);   font-weight: 600; }
+        .open-trade { color: var(--gold); font-weight: 600; }
+
+        /* ── METHODOLOGY ── */
+        .methodology { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px; }
+        .meth-box {
+            background: rgba(56,189,248,0.04); border: 1px solid rgba(56,189,248,0.14);
+            border-radius: 14px; padding: 22px;
+        }
+        .meth-box h3 { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .meth-box p  { font-size: 13px; color: var(--dim); line-height: 1.8; }
+        .meth-box ul { font-size: 13px; color: var(--dim); line-height: 1.9; padding-left: 16px; margin-top: 8px; }
+        .meth-box ul li strong { color: var(--text); }
+
+        /* ── FOOTER ── */
+        footer { text-align: center; padding: 20px; color: var(--dim); font-size: 12px; border-top: 1px solid var(--border); }
+        footer a { color: var(--accent); text-decoration: none; }
+
+        /* utils */
+        .green { color: var(--green); }
+        .red   { color: var(--red);   }
+        .gold  { color: var(--gold);  }
+        .blue  { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <a href="index.html" class="back-link">← Retour à l'aquarium</a>
+    <span class="topbar-title">Smart Money vs The Tide — Analyse complète</span>
+</div>
+
+<!-- SIGNAL BANNER -->
+<div class="signal-banner">
+    <div class="signal-pill">
+        <div class="live-dot" id="live-dot"></div>
+        <span id="signal-text">Chargement données live…</span>
+    </div>
+</div>
+
+<!-- METRICS ROW -->
+<div class="metrics">
+    <div class="card">
+        <div class="card-label">🌊 Retail Sentiment</div>
+        <div class="card-value" id="fg-value" style="color:var(--dim)">--</div>
+        <div class="card-sub" id="fg-class">Loading…</div>
+        <div class="card-foot">Fear &amp; Greed Index · daily</div>
+    </div>
+    <div class="card">
+        <div class="card-label">🏦 ETF Flows — 7 jours</div>
+        <div class="card-value" id="etf-7d" style="font-size:22px;color:var(--dim)">--</div>
+        <div class="card-sub" id="etf-latest">Loading…</div>
+        <div class="card-foot">IBIT · FBTC · ARKB · Farside</div>
+    </div>
+    <div class="card">
+        <div class="card-label">📊 HF Futures (COT)</div>
+        <div class="card-value" id="cot-net" style="font-size:20px;color:var(--dim)">--</div>
+        <div class="card-sub" id="cot-change">Loading…</div>
+        <div class="card-foot">CFTC · Hedge funds · BTC CME</div>
+    </div>
+    <div class="card">
+        <div class="card-label">₿ BTC Price</div>
+        <div class="card-value" id="btc-price" style="font-size:22px;color:var(--gold)">--</div>
+        <div class="card-sub" id="btc-change">Loading…</div>
+        <div class="card-foot">Current · 24h change</div>
+    </div>
+</div>
+
+<!-- COT SECTION -->
+<div class="section" style="padding-bottom:0">
+    <div class="section-title">🏛️ Positions institutionnelles — CFTC COT</div>
+    <div class="section-sub">
+        Source : US Commodity Futures Trading Commission (gouvernement américain) · Rapport "Traders in Financial Futures" ·
+        Publié chaque vendredi · <strong style="color:var(--accent)">Vraies positions des hedge funds en BTC futures CME</strong>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px">
+        <div class="stat-card">
+            <div class="stat-label">Position HF nette (longs − courts)</div>
+            <div class="stat-value" id="cot-net-big" style="color:var(--dim)">--</div>
+            <div class="stat-sub">contrats futures CME</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Variation semaine / semaine</div>
+            <div class="stat-value" id="cot-change-big" style="color:var(--dim)">--</div>
+            <div class="stat-sub">contrats achetés ou vendus</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Date du rapport</div>
+            <div class="stat-value" id="cot-date" style="font-size:18px;color:var(--text)">--</div>
+            <div class="stat-sub" id="cot-source-note">CFTC TFF report</div>
+        </div>
+    </div>
+    <div class="chart-box" id="cot-chart-box">
+        <div class="loading-msg"><div class="spinner"></div><br>Chargement données CFTC…</div>
+    </div>
+</div>
+
+<!-- ETF FLOWS SECTION -->
+<div class="section" style="padding-bottom:0">
+    <div class="section-title">🏦 Flux ETF Bitcoin — Vraie demande institutionnelle</div>
+    <div class="section-sub">
+        Source : <a href="https://farside.co.uk/btc/" target="_blank">Farside Investors</a> ·
+        Flux quotidiens IBIT (BlackRock), FBTC (Fidelity), ARKB (ARK), GBTC (Grayscale) ·
+        <strong style="color:var(--accent)">Argent réel qui entre ou sort des ETFs spot BTC</strong>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px">
+        <div class="stat-card">
+            <div class="stat-label">Flux nets 7 jours</div>
+            <div class="stat-value" id="etf-net-7d">--</div>
+            <div class="stat-sub">$M entrants − sortants</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Flux nets 30 jours</div>
+            <div class="stat-value" id="etf-net-30d">--</div>
+            <div class="stat-sub">$M entrants − sortants</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Dernière journée (total)</div>
+            <div class="stat-value" id="etf-last-day">--</div>
+            <div class="stat-sub" id="etf-last-date">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">IBIT (BlackRock) — dernier jour</div>
+            <div class="stat-value" id="etf-ibit">--</div>
+            <div class="stat-sub">Le plus grand ETF BTC au monde</div>
+        </div>
+    </div>
+    <div class="chart-box" id="etf-chart-box">
+        <div class="loading-msg"><div class="spinner"></div><br>Chargement flux ETF…</div>
+    </div>
+</div>
+
+<!-- BACKTEST SECTION -->
+<div class="section">
+    <div class="section-title">📈 Backtest 5 ans — Stratégie contrarian</div>
+    <div class="section-sub">
+        Acheter quand le retail panique (F&G ≤ 30) · Vendre quand le retail est en euphorie (F&G ≥ 70) ·
+        Comparer au buy &amp; hold BTC sur 5 ans.
+    </div>
+    <div class="chart-box" id="chart-box">
+        <div class="loading-msg"><div class="spinner"></div><br>Chargement 5 ans de données…</div>
+    </div>
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="trades-section" id="trades-section" style="display:none">
+        <div class="trades-title">Trades individuels</div>
+        <div class="trades-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date achat</th><th>F&G achat</th>
+                        <th>Date vente</th><th>F&G vente</th>
+                        <th>Durée</th><th>Rendement</th>
+                    </tr>
+                </thead>
+                <tbody id="trades-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- METHODOLOGY -->
+<div class="methodology">
+    <div class="meth-box">
+        <h3>Méthodologie · Sources de données</h3>
+        <p>Ce dashboard combine trois sources de données publiques et gratuites pour mesurer la divergence entre retail et smart money :</p>
+        <ul>
+            <li><strong>🌊 Retail (le courant) :</strong> Crypto Fear &amp; Greed Index (alternative.me) — 0 à 100. En dessous de 30 = panique. Au-dessus de 70 = euphorie.</li>
+            <li><strong>🏦 ETF flows :</strong> Farside Investors (farside.co.uk/btc/) — flux quotidiens en millions $ de IBIT (BlackRock), FBTC (Fidelity), ARKB (ARK), etc. C'est la demande institutionnelle directe via les ETFs spot BTC approuvés en janvier 2024.</li>
+            <li><strong>🐟 COT (Commitments of Traders) :</strong> CFTC "Traders in Financial Futures" — rapport hebdomadaire du gouvernement américain. Positions nettes longues/courtes des hedge funds et leveraged money en BTC futures CME. Note : depuis 2024, les Asset Managers (fonds de pension) utilisent les ETFs spot, pas les futures. Le signal le plus pertinent est Lev_Money (hedge funds, CTAs).</li>
+            <li><strong>📡 Signal de divergence :</strong> Le signal le plus fort = retail panique + ETF en afflux + HF nets longs. Historiquement, c'est quand les institutions achètent discrètement que les meilleurs points d'entrée se produisent.</li>
+            <li><strong>⚠️ Limite honnête :</strong> Les données COT ont un délai de 3 jours (positions du mardi, publiées le vendredi). Les ETF flows sont mis à jour manuellement via <code>python3 fetch_etf_flows.py</code>. Ce n'est pas une recommandation d'investissement.</li>
+        </ul>
+    </div>
+</div>
+
+<footer>
+    Données : <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank">Alternative.me</a> ·
+    <a href="https://farside.co.uk/btc/" target="_blank">Farside Investors</a> ·
+    <a href="https://www.cftc.gov" target="_blank">CFTC</a> ·
+    Un side project de <a href="https://onoff.markets" target="_blank">OnOff.Markets</a>
+</footer>
+
+<!-- ============================================================
+     DATA + CHARTS
+============================================================ -->
+<script>
+function setLoadingMsg(msg) {
+    const box = document.getElementById('chart-box');
+    const el  = box.querySelector('.loading-msg');
+    if (el) el.innerHTML = `<div class="spinner"></div><br>${msg}`;
+}
+
+async function fetchWithTimeout(url, ms = 15000) {
+    const ctrl = new AbortController();
+    const tid  = setTimeout(() => ctrl.abort(), ms);
+    try { const r = await fetch(url, { signal: ctrl.signal }); clearTimeout(tid); return r; }
+    catch(e) { clearTimeout(tid); throw e; }
+}
+
+// ── F&G ─────────────────────────────────────────────────────
+async function fetchFG(limit = 1825) {
+    setLoadingMsg('Récupération Fear & Greed…');
+    const r = await fetchWithTimeout(`https://api.alternative.me/fng/?limit=${limit}&format=json`, 20000);
+    const d = await r.json();
+    return d.data.reverse().map(e => ({
+        date:  new Date(e.timestamp * 1000).toISOString().split('T')[0],
+        fg:    parseInt(e.value),
+        label: e.value_classification,
+    }));
+}
+
+// ── BTC price history ─────────────────────────────────────────
+async function fetchBTCHistoryCryptoCompare() {
+    const r = await fetchWithTimeout('https://min-api.cryptocompare.com/data/v2/histoday?fsym=BTC&tsym=USD&limit=2000', 25000);
+    if (!r.ok) throw new Error(`CryptoCompare ${r.status}`);
+    const d = await r.json();
+    if (!d.Data?.Data?.length) throw new Error('CryptoCompare empty');
+    const map = new Map();
+    d.Data.Data.forEach(e => {
+        if (e.close > 0) map.set(new Date(e.time * 1000).toISOString().split('T')[0], e.close);
+    });
+    return map;
+}
+async function fetchBTCHistoryCoinGecko() {
+    const r = await fetchWithTimeout('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=1825', 20000);
+    if (!r.ok) throw new Error(`CoinGecko ${r.status}`);
+    const d = await r.json();
+    const map = new Map();
+    d.prices.forEach(([ts, price]) => map.set(new Date(ts).toISOString().split('T')[0], price));
+    return map;
+}
+async function fetchBTCHistory() {
+    setLoadingMsg('Récupération historique BTC (CryptoCompare)…');
+    try { return await fetchBTCHistoryCryptoCompare(); }
+    catch(e) {
+        console.warn('CryptoCompare failed, fallback CoinGecko…', e.message);
+        setLoadingMsg('Fallback CoinGecko…');
+        return await fetchBTCHistoryCoinGecko();
+    }
+}
+
+// ── BTC current ───────────────────────────────────────────────
+async function fetchBTCCurrent() {
+    try {
+        const r = await fetchWithTimeout('https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC&tsyms=USD', 10000);
+        const d = await r.json();
+        const raw = d.RAW?.BTC?.USD;
+        return { usd: raw.PRICE, usd_24h_change: raw.CHANGEPCT24HOUR };
+    } catch {
+        try {
+            const r = await fetchWithTimeout('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true', 10000);
+            const d = await r.json();
+            return d.bitcoin;
+        } catch { return { usd: 0, usd_24h_change: 0 }; }
+    }
+}
+
+// ── ETF Flows ─────────────────────────────────────────────────
+let etfData = null;
+async function fetchETFFlows() {
+    try {
+        const r = await fetchWithTimeout('data/etf_flows.json', 8000);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        etfData = await r.json();
+        return etfData;
+    } catch(e) {
+        console.warn('ETF flows not available:', e.message);
+        return null;
+    }
+}
+
+function updateETFCards(etf) {
+    const noData = msg => ['etf-7d','etf-latest','etf-net-7d','etf-net-30d','etf-last-day','etf-last-date','etf-ibit'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = msg; el.style.color = '#475569'; }
+    });
+
+    if (!etf) {
+        noData('Lancer fetch_etf_flows.py');
+        document.getElementById('etf-chart-box').innerHTML =
+            `<div class="loading-msg" style="padding:40px">⚠️ Données ETF non disponibles<br>
+            <small style="color:#475569;margin-top:8px;display:block">
+                <code>python3 fetch_etf_flows.py</code>
+            </small></div>`;
+        return;
+    }
+
+    const latest = etf.latest || {};
+    const n7  = etf.net_7d  || 0;
+    const n30 = etf.net_30d || 0;
+    const lastTotal = latest.total || 0;
+    const lastIBIT  = latest.ibit  || 0;
+    const fmt = v => (v >= 0 ? '+' : '') + v.toFixed(0) + 'M$';
+    const col = v => v >= 0 ? '#4ade80' : '#f87171';
+
+    const set = (id, text, color) => {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = text; el.style.color = color; }
+    };
+
+    // Metric row mini cards
+    set('etf-7d',    fmt(n7), col(n7));
+    set('etf-latest', `${fmt(lastTotal)} hier · IBIT ${fmt(lastIBIT)}`, col(lastTotal));
+
+    // Big stat cards
+    set('etf-net-7d',  fmt(n7),         col(n7));
+    set('etf-net-30d', fmt(n30),        col(n30));
+    set('etf-last-day',fmt(lastTotal),  col(lastTotal));
+    set('etf-ibit',    fmt(lastIBIT),   col(lastIBIT));
+    const ldEl = document.getElementById('etf-last-date');
+    if (ldEl) ldEl.textContent = latest.date || '--';
+
+    renderETFChart(etf.history || []);
+}
+
+let etfChart = null;
+function renderETFChart(history) {
+    const box = document.getElementById('etf-chart-box');
+    if (!history.length) { box.innerHTML = '<div class="loading-msg">Pas assez de données</div>'; return; }
+
+    const labels = history.map(d => d.date);
+    const totals = history.map(d => d.total || 0);
+    const ibit   = history.map(d => d.ibit  || 0);
+    const gbtc   = history.map(d => d.gbtc  || 0);
+
+    box.innerHTML = `
+        <div class="chart-legend">
+            <div class="chart-legend-item"><div class="chart-legend-line" style="background:#4ade80;height:10px;border-radius:2px;width:16px"></div>Flux net total</div>
+            <div class="chart-legend-item"><div class="chart-legend-line" style="background:#38bdf8"></div>IBIT (BlackRock)</div>
+            <div class="chart-legend-item"><div class="chart-legend-line" style="background:#f87171"></div>GBTC (Grayscale)</div>
+        </div>
+        <canvas id="etf-canvas" height="100"></canvas>`;
+
+    if (etfChart) { etfChart.destroy(); etfChart = null; }
+    etfChart = new Chart(document.getElementById('etf-canvas').getContext('2d'), {
+        data: {
+            labels,
+            datasets: [
+                { type:'bar',  label:'Flux net total ($M)', data:totals,
+                  backgroundColor: totals.map(v => v >= 0 ? 'rgba(74,222,128,0.55)' : 'rgba(248,113,113,0.55)'), yAxisID:'y', order:2 },
+                { type:'line', label:'IBIT', data:ibit, borderColor:'#38bdf8', borderWidth:2,
+                  pointRadius:2, pointBackgroundColor:'#38bdf8', tension:0.2, yAxisID:'y', order:1 },
+                { type:'line', label:'GBTC', data:gbtc, borderColor:'#f87171', borderWidth:1.5,
+                  pointRadius:0, tension:0.2, yAxisID:'y', order:1 },
+            ]
+        },
+        options: {
+            responsive: true, interaction: { mode:'index', intersect:false },
+            plugins: {
+                legend: { display:false },
+                tooltip: {
+                    backgroundColor:'rgba(6,9,20,0.92)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+                    callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y >= 0 ? '+' : ''}${c.parsed.y.toFixed(0)}M$` }
+                }
+            },
+            scales: {
+                x: { grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#475569', font:{size:11} } },
+                y: { grid:{ color:'rgba(255,255,255,0.04)' }, ticks:{ color:'#475569', font:{size:11}, callback: v => (v>=0?'+':'')+v+'M$' } }
+            }
+        }
+    });
+}
+
+// ── COT ──────────────────────────────────────────────────────
+let cotData = null;
+async function fetchCOT() {
+    // Try remote API first
+    try {
+        const r = await fetchWithTimeout('https://api.cryptodatadownload.com/v1/data/cot/crypto/?format=json', 20000);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const d = await r.json();
+        const rows = (d.result || d.data || [])
+            .filter(e => (e.market_name || '').toUpperCase().includes('BITCOIN'))
+            .sort((a, b) => new Date(a.report_date) - new Date(b.report_date));
+        if (!rows.length) throw new Error('No Bitcoin rows');
+        const enriched = rows.map((e, i) => {
+            const instNet = (parseFloat(e.asset_mgr_long)||0) - (parseFloat(e.asset_mgr_short)||0);
+            const hfNet   = (parseFloat(e.leveraged_long)||0) - (parseFloat(e.leveraged_short)||0);
+            const prev    = i > 0 ? rows[i-1] : null;
+            const prevNet = prev ? (parseFloat(prev.asset_mgr_long)||0) - (parseFloat(prev.asset_mgr_short)||0) : instNet;
+            return { date:e.report_date, inst_net:instNet, inst_change:instNet - prevNet, hf_net:hfNet,
+                     inst_long:parseFloat(e.asset_mgr_long)||0, inst_short:parseFloat(e.asset_mgr_short)||0 };
+        });
+        cotData = { history:enriched, latest:enriched[enriched.length-1], source:'Crypto Data Download API' };
+        return cotData;
+    } catch(e) {
+        console.warn('COT remote failed, trying local…', e.message);
+    }
+    // Fallback: local JSON generated by fetch_cot.py
+    try {
+        const r2 = await fetchWithTimeout('data/cot_data.json', 5000);
+        if (!r2.ok) throw new Error('No local COT file');
+        const local = await r2.json();
+        cotData = {
+            history: (local.history || []).map(h => ({ ...h, inst_change: h.inst_net_change ?? h.inst_change ?? 0 })),
+            latest:  { date:local.report_date, inst_net:local.inst_net, inst_change:local.inst_net_change,
+                       hf_net:local.hf_net, signal:local.signal, signal_desc:local.signal_desc },
+            source:  (local.source || 'CFTC') + ' · cache local',
+        };
+        return cotData;
+    } catch(e2) {
+        console.warn('No COT data available:', e2.message);
+        return null;
+    }
+}
+
+function cotSignal(latest) {
+    if (!latest) return { label:'Données COT indisponibles', color:'#64748b' };
+    const sig = latest.signal || '';
+    if (sig === 'accumulate_strong') return { label:'🐟→ HF nets longs, achètent fort',  color:'#4ade80' };
+    if (sig === 'accumulate')        return { label:'🐟→ HF nets longs, haussiers',       color:'#86efac' };
+    if (sig === 'reducing')          return { label:'🐟~ HF réduisent leurs longs',        color:'#fbbf24' };
+    if (sig === 'covering')          return { label:'🐟↑ HF couvrent shorts — retournement?', color:'#38bdf8' };
+    if (sig === 'covering_light')    return { label:'🐟↑ HF nets courts, couvrent progressivement', color:'#7dd3fc' };
+    if (sig === 'short_heavy')       return { label:'←🐟 HF ajoutent des shorts, baissiers', color:'#f87171' };
+    const net = latest.inst_net || 0, chg = latest.inst_change || 0;
+    if (net > 0 && chg > 0) return { label:'🐟→ HF nets longs et en hausse', color:'#4ade80' };
+    if (net < 0 && chg > 0) return { label:'🐟↑ HF couvrent leurs shorts',   color:'#7dd3fc' };
+    if (net < 0 && chg < 0) return { label:'←🐟 HF ajoutent des shorts',     color:'#f87171' };
+    return { label:'🐟~ HF position neutre', color:'#94a3b8' };
+}
+
+function updateCOTCards(cot) {
+    const na = id => { const el = document.getElementById(id); if(el) el.textContent = 'N/A'; };
+    if (!cot || !cot.latest) {
+        ['cot-net','cot-change','cot-net-big','cot-change-big','cot-date'].forEach(na);
+        document.getElementById('cot-chart-box').innerHTML =
+            `<div class="loading-msg" style="padding:40px">⚠️ COT API unavailable<br>
+            <small style="color:#475569;margin-top:8px;display:block">
+                Run <code>python3 fetch_cot.py</code> to generate data/cot_data.json
+            </small></div>`;
+        return;
+    }
+    const { latest, history } = cot;
+    const sig = cotSignal(latest);
+    const net = latest.inst_net || 0;
+    const chg = latest.inst_change || 0;
+    const fmt = (v, sign=true) => (sign && v > 0 ? '+' : '') + v.toLocaleString();
+
+    document.getElementById('cot-net').textContent  = fmt(net);
+    document.getElementById('cot-net').style.color  = sig.color;
+    document.getElementById('cot-change').textContent = (chg >= 0 ? '▲ +' : '▼ ') + Math.abs(chg).toLocaleString() + ' cette semaine';
+    document.getElementById('cot-change').style.color = chg >= 0 ? '#4ade80' : '#f87171';
+    document.getElementById('cot-net-big').textContent  = fmt(net) + ' contrats';
+    document.getElementById('cot-net-big').style.color  = sig.color;
+    document.getElementById('cot-change-big').textContent = fmt(chg);
+    document.getElementById('cot-change-big').style.color = chg >= 0 ? '#4ade80' : '#f87171';
+    document.getElementById('cot-date').textContent   = latest.date || 'N/A';
+    document.getElementById('cot-source-note').textContent = cot.source || '';
+
+    renderCOTChart(history);
+}
+
+let cotChart = null;
+function renderCOTChart(history) {
+    const box = document.getElementById('cot-chart-box');
+    if (!history || history.length < 2) { box.innerHTML = '<div class="loading-msg">Pas assez de données COT</div>'; return; }
+
+    const recent  = history.slice(-52);
+    const labels  = recent.map(d => d.date);
+    const netData = recent.map(d => d.inst_net);
+    const chgData = recent.map(d => d.inst_change);
+
+    box.innerHTML = `
+        <div class="chart-legend">
+            <div class="chart-legend-item"><div class="chart-legend-line" style="background:#38bdf8"></div>Position nette HF (longs − courts)</div>
+            <div class="chart-legend-item"><div class="chart-legend-line" style="background:rgba(251,191,36,0.6)"></div>Variation hebdo</div>
+        </div>
+        <canvas id="cot-canvas" height="90"></canvas>`;
+
+    if (cotChart) { cotChart.destroy(); cotChart = null; }
+    cotChart = new Chart(document.getElementById('cot-canvas').getContext('2d'), {
+        data: {
+            labels,
+            datasets: [
+                { type:'line', label:'Net HF', data:netData, borderColor:'#38bdf8', borderWidth:2,
+                  backgroundColor: c => {
+                      const g = c.chart.ctx.createLinearGradient(0,0,0,300);
+                      g.addColorStop(0,'rgba(56,189,248,0.14)'); g.addColorStop(1,'rgba(56,189,248,0)');
+                      return g;
+                  }, fill:true, pointRadius:0, tension:0.3, yAxisID:'y' },
+                { type:'bar', label:'Variation', data:chgData,
+                  backgroundColor: chgData.map(v => v >= 0 ? 'rgba(74,222,128,0.5)' : 'rgba(248,113,113,0.5)'),
+                  yAxisID:'y2' },
+            ]
+        },
+        options: {
+            responsive:true, interaction:{ mode:'index', intersect:false },
+            plugins: {
+                legend:{ display:false },
+                tooltip: {
+                    backgroundColor:'rgba(6,9,20,0.92)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+                    callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y >= 0 ? '+' : ''}${Math.round(c.parsed.y).toLocaleString()} contrats` }
+                }
+            },
+            scales: {
+                x:  { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#475569',font:{size:11},maxTicksLimit:8} },
+                y:  { position:'left',  grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#475569',font:{size:11}, callback:v=>(v>=0?'+':'')+Math.round(v/1000)+'k'} },
+                y2: { position:'right', grid:{display:false}, ticks:{color:'#475569',font:{size:10}, callback:v=>(v>=0?'+':'')+Math.round(v/1000)+'k'} },
+            }
+        }
+    });
+}
+
+// ── Merge + Backtest ──────────────────────────────────────────
+function mergeData(fgArr, priceMap) {
+    return fgArr.map(e => ({ ...e, price: priceMap.get(e.date) || null })).filter(e => e.price !== null);
+}
+
+const BUY_THRESHOLD  = 30;
+const SELL_THRESHOLD = 70;
+
+function runBacktest(matched) {
+    let portfolio = 100, inPosition = false, lastPrice = matched[0].price;
+    let entryPrice = 0, entryDate = '', entryFG = 0;
+    const stratLine = [], holdLine = [], trades = [];
+    const startPrice = matched[0].price;
+
+    matched.forEach((d, i) => {
+        const holdVal = 100 * (d.price / startPrice);
+        if (i > 0 && inPosition) portfolio *= (d.price / lastPrice);
+        lastPrice = d.price;
+        stratLine.push({ date:d.date, value:portfolio });
+        holdLine.push({ date:d.date, value:holdVal });
+
+        if (!inPosition && d.fg <= BUY_THRESHOLD) {
+            inPosition = true; entryPrice = d.price; entryDate = d.date; entryFG = d.fg;
+        } else if (inPosition && d.fg >= SELL_THRESHOLD) {
+            const ret  = (d.price - entryPrice) / entryPrice * 100;
+            const days = Math.round((new Date(d.date) - new Date(entryDate)) / 86400000);
+            trades.push({ entryDate, exitDate:d.date, entryPrice, exitPrice:d.price, entryFG, exitFG:d.fg, ret, days, isOpen:false });
+            inPosition = false;
+        }
+    });
+
+    if (inPosition && matched.length > 0) {
+        const last = matched[matched.length - 1];
+        const ret  = (last.price - entryPrice) / entryPrice * 100;
+        const days = Math.round((new Date(last.date) - new Date(entryDate)) / 86400000);
+        trades.push({ entryDate, exitDate:last.date, entryPrice, exitPrice:last.price, entryFG, exitFG:last.fg, ret, days, isOpen:true });
+    }
+
+    const closed   = trades.filter(t => !t.isOpen);
+    const wins     = closed.filter(t => t.ret > 0);
+    const winRate  = closed.length ? wins.length / closed.length * 100 : 0;
+    const avgRet   = closed.length ? closed.reduce((s,t) => s+t.ret, 0) / closed.length : 0;
+    const finalStr = stratLine[stratLine.length-1]?.value ?? 100;
+    const finalHld = holdLine[holdLine.length-1]?.value  ?? 100;
+    const daysInMkt = trades.reduce((s,t) => s+t.days, 0);
+    const timeInMkt = matched.length ? daysInMkt / matched.length * 100 : 0;
+
+    return { trades, closed, stratLine, holdLine, winRate, avgRet, finalStr, finalHld, timeInMkt, inPosition };
+}
+
+// ── Render helpers ────────────────────────────────────────────
+const fgColor = v => v <= 25 ? '#f87171' : v <= 45 ? '#fb923c' : v <= 55 ? '#94a3b8' : v <= 75 ? '#4ade80' : '#22c55e';
+const fmtPrice = p => '$' + Math.round(p).toLocaleString('en-US');
+const fmtPct   = (v, plus=true) => (plus && v > 0 ? '+' : '') + v.toFixed(1) + '%';
+
+// ── Update live metrics ───────────────────────────────────────
+function updateLive(fgArr, btcCurrent, matched) {
+    const cur  = fgArr[fgArr.length - 1];
+    const fg   = cur.fg;
+    const cotLatest = cotData?.latest;
+    const cotNet    = cotLatest?.inst_net ?? null;
+    const cotSig    = cotLatest?.signal || '';
+    const etfNet7   = etfData?.net_7d ?? null;
+
+    // F&G card
+    const fgEl = document.getElementById('fg-value');
+    fgEl.textContent  = fg;
+    fgEl.style.color  = fgColor(fg);
+    const fgCls = document.getElementById('fg-class');
+    fgCls.textContent = cur.label;
+    fgCls.style.color = fgColor(fg);
+
+    // Signal pill
+    const sText = document.getElementById('signal-text');
+    let sigColor, pillText;
+
+    const etfBull = etfNet7 !== null && etfNet7 > 100;
+    const cotBull = cotNet !== null && cotNet > 0;
+    const cotCovering = cotSig.includes('covering');
+
+    if (fg <= BUY_THRESHOLD && (etfBull || cotBull)) {
+        sigColor = '#4ade80';
+        pillText = `⚡ Fort signal — Retail panique (F&G: ${fg}) + institutions achètent`;
+    } else if (fg <= BUY_THRESHOLD && cotCovering) {
+        sigColor = '#7dd3fc';
+        pillText = `Retail panique (F&G: ${fg}) + HF couvrent leurs shorts — retournement possible`;
+    } else if (fg <= BUY_THRESHOLD) {
+        sigColor = '#fbbf24';
+        pillText = `Retail en panique (F&G: ${fg})${cotNet !== null ? ` · HF: ${cotNet > 0 ? '+' : ''}${cotNet.toLocaleString()} contrats` : ''}`;
+    } else if (fg >= SELL_THRESHOLD) {
+        sigColor = '#f87171';
+        pillText = `Retail en euphorie (F&G: ${fg}) — surveiller les sorties institutionnelles`;
+    } else {
+        sigColor = '#94a3b8';
+        pillText = `Zone neutre (F&G: ${fg})${cotNet !== null ? ` · HF: ${cotNet > 0 ? '+' : ''}${cotNet.toLocaleString()} contrats` : ''}`;
+    }
+    sText.textContent = pillText;
+    sText.style.color = sigColor;
+    document.getElementById('live-dot').style.background = sigColor;
+    document.getElementById('live-dot').style.boxShadow  = `0 0 8px ${sigColor}`;
+
+    // BTC card
+    const priceEl = document.getElementById('btc-price');
+    priceEl.textContent = fmtPrice(btcCurrent.usd);
+    const chg = btcCurrent.usd_24h_change;
+    const chgEl = document.getElementById('btc-change');
+    chgEl.textContent = fmtPct(chg) + ' (24h)';
+    chgEl.style.color = chg >= 0 ? '#4ade80' : '#f87171';
+}
+
+// ── Render backtest chart ─────────────────────────────────────
+let backtestChart = null;
+function renderChart(result) {
+    const box  = document.getElementById('chart-box');
+    const total = result.stratLine.length;
+    const step  = Math.max(1, Math.floor(total / 600));
+    const labels    = result.stratLine.filter((_,i) => i%step===0).map(d => d.date);
+    const stratData = result.stratLine.filter((_,i) => i%step===0).map(d => d.value);
+    const holdData  = result.holdLine.filter((_,i)  => i%step===0).map(d => d.value);
+
+    box.innerHTML = `
+        <div class="chart-legend">
+            <div class="chart-legend-item"><div class="chart-legend-line" style="background:#38bdf8"></div>Contrarian (buy fear / sell greed)</div>
+            <div class="chart-legend-item"><div class="chart-legend-line" style="background:rgba(255,255,255,0.2)"></div>Buy &amp; Hold BTC</div>
+        </div>
+        <canvas id="backtest-canvas" height="100"></canvas>`;
+
+    if (backtestChart) { backtestChart.destroy(); backtestChart = null; }
+    backtestChart = new Chart(document.getElementById('backtest-canvas').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                { label:'Contrarian', data:stratData, borderColor:'#38bdf8', borderWidth:2,
+                  backgroundColor:'rgba(56,189,248,0.07)', fill:true, pointRadius:0, tension:0.2 },
+                { label:'Buy & Hold', data:holdData, borderColor:'rgba(255,255,255,0.2)', borderWidth:1.5,
+                  pointRadius:0, tension:0.2, fill:false },
+            ]
+        },
+        options: {
+            responsive:true, interaction:{ mode:'index', intersect:false },
+            plugins: {
+                legend:{ display:false },
+                tooltip: {
+                    backgroundColor:'rgba(6,9,20,0.92)', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, padding:10,
+                    callbacks: { label: c => `${c.dataset.label}: $${c.parsed.y.toFixed(0)} (depuis $100)` }
+                }
+            },
+            scales: {
+                x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#475569',font:{size:11},maxTicksLimit:8} },
+                y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#475569',font:{size:11}, callback:v=>'$'+Math.round(v)} }
+            }
+        }
+    });
+}
+
+function renderStats(result) {
+    const { finalStr, finalHld, winRate, avgRet, timeInMkt, closed } = result;
+    const diff = finalStr - finalHld;
+    const out  = finalStr > finalHld;
+
+    document.getElementById('stats-grid').innerHTML = [
+        { label:'Rendement stratégie',  value:fmtPct(finalStr-100), sub:`$100 → $${Math.round(finalStr)}`, color: finalStr>=100?'#4ade80':'#f87171' },
+        { label:'Buy &amp; Hold BTC',   value:fmtPct(finalHld-100), sub:`$100 → $${Math.round(finalHld)}`, color: finalHld>=100?'#94a3b8':'#f87171' },
+        { label:'vs Buy &amp; Hold',    value:(out?'+':'')+Math.round(diff)+'%', sub: out?'🐟 Stratégie gagne':'📉 B&H gagne', color: out?'#4ade80':'#f87171' },
+        { label:'Win Rate',             value:winRate.toFixed(0)+'%', sub:`${closed.length} trades terminés`, color: winRate>=60?'#4ade80':winRate>=40?'#fbbf24':'#f87171' },
+        { label:'Rendement moyen/trade',value:fmtPct(avgRet), sub:'Par cycle achat→vente', color: avgRet>=0?'#4ade80':'#f87171' },
+        { label:'Temps en marché',      value:timeInMkt.toFixed(0)+'%', sub:'Sur 5 ans', color:'#f59e0b' },
+    ].map(c => `<div class="stat-card"><div class="stat-label">${c.label}</div><div class="stat-value" style="color:${c.color}">${c.value}</div><div class="stat-sub">${c.sub}</div></div>`).join('');
+}
+
+function renderTrades(result) {
+    const section = document.getElementById('trades-section');
+    const tbody   = document.getElementById('trades-body');
+    if (!result.trades.length) return;
+    section.style.display = 'block';
+    tbody.innerHTML = result.trades.map(t => {
+        const cls = t.isOpen ? 'open-trade' : t.ret >= 0 ? 'win' : 'loss';
+        const ret = (t.ret >= 0 ? '+' : '') + t.ret.toFixed(1) + '%';
+        return `<tr>
+            <td>${t.entryDate}</td>
+            <td style="color:#38bdf8">${t.entryFG} — ${t.entryFG<=25?'Extreme Fear':'Fear'}</td>
+            <td>${t.isOpen ? t.exitDate+' ⚡ open' : t.exitDate}</td>
+            <td style="color:#f87171">${t.exitFG} — ${t.exitFG>=75?'Extreme Greed':t.exitFG>=55?'Greed':'—'}</td>
+            <td style="color:#94a3b8">${t.days}j</td>
+            <td class="${cls}">${ret}</td>
+        </tr>`;
+    }).join('');
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+async function init() {
+    try {
+        // Load all independent sources in parallel
+        const [fgArr, cot, etf] = await Promise.all([
+            fetchFG(1825),
+            fetchCOT(),
+            fetchETFFlows(),
+        ]);
+
+        updateCOTCards(cot);
+        updateETFCards(etf);
+
+        // BTC history + price (sequential: price depends on history for context)
+        const [priceMap, btcCurrent] = await Promise.all([
+            fetchBTCHistory(),
+            fetchBTCCurrent(),
+        ]);
+
+        setLoadingMsg('Calcul du backtest…');
+        const matched = mergeData(fgArr, priceMap);
+        if (matched.length < 10) throw new Error(`Pas assez de points (${matched.length}). Décalage entre les APIs.`);
+
+        const result = runBacktest(matched);
+        updateLive(fgArr, btcCurrent, matched);
+        renderChart(result);
+        renderStats(result);
+        renderTrades(result);
+
+    } catch(err) {
+        console.error('Data error:', err);
+        document.getElementById('chart-box').innerHTML = `
+            <div class="loading-msg">
+                ⚠️ Erreur de chargement<br>
+                <small style="color:#475569;margin-top:8px;display:block">
+                    ${err.message}<br><br>
+                    Les deux APIs (CryptoCompare + CoinGecko) semblent indisponibles.<br>
+                    Attendez 1 minute et rafraîchissez.
+                </small>
+            </div>`;
+    }
+}
+
+init();
+</script>
+</body>
+</html>

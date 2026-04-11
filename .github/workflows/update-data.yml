@@ -1,0 +1,37 @@
+name: Update market data
+
+on:
+  schedule:
+    # Tous les jours à 8h UTC (après clôture US la veille)
+    - cron: '0 8 * * *'
+  workflow_dispatch: # déclenchement manuel possible
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch ETF flows (Farside — quotidien)
+        run: python fetch_etf_flows.py
+
+      - name: Fetch COT data (CFTC — vendredi uniquement)
+        # Le fichier COT ne change qu'une fois par semaine mais on tente tous les jours
+        # fetch_cot.py gère lui-même si les données sont déjà à jour
+        run: python fetch_cot.py
+
+      - name: Commit updated data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/etf_flows.json data/cot_data.json
+          git diff --staged --quiet || git commit -m "chore: update market data $(date -u '+%Y-%m-%d')"
+          git push

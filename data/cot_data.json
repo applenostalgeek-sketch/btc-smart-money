@@ -1,0 +1,541 @@
+{
+  "last_updated": "2026-04-11 14:13 UTC",
+  "report_date": "2026-04-07",
+  "signal": "short_heavy",
+  "signal_desc": "HF nets courts -8,427 contrats, ajoutent des shorts (-375)",
+  "inst_net": -8427,
+  "inst_net_change": -375,
+  "hf_net": -8427,
+  "history": [
+    {
+      "date": "2025-01-07",
+      "inst_net": -21204,
+      "inst_long": 10244,
+      "inst_short": 705,
+      "hf_net": -21204,
+      "inst_net_change": 0
+    },
+    {
+      "date": "2025-01-14",
+      "inst_net": -21336,
+      "inst_long": 10346,
+      "inst_short": 527,
+      "hf_net": -21336,
+      "inst_net_change": -132
+    },
+    {
+      "date": "2025-01-21",
+      "inst_net": -22869,
+      "inst_long": 11151,
+      "inst_short": 512,
+      "hf_net": -22869,
+      "inst_net_change": -1533
+    },
+    {
+      "date": "2025-01-28",
+      "inst_net": -22218,
+      "inst_long": 10212,
+      "inst_short": 675,
+      "hf_net": -22218,
+      "inst_net_change": 651
+    },
+    {
+      "date": "2025-02-04",
+      "inst_net": -20998,
+      "inst_long": 9863,
+      "inst_short": 616,
+      "hf_net": -20998,
+      "inst_net_change": 1220
+    },
+    {
+      "date": "2025-02-11",
+      "inst_net": -20083,
+      "inst_long": 9494,
+      "inst_short": 686,
+      "hf_net": -20083,
+      "inst_net_change": 915
+    },
+    {
+      "date": "2025-02-18",
+      "inst_net": -19782,
+      "inst_long": 9175,
+      "inst_short": 832,
+      "hf_net": -19782,
+      "inst_net_change": 301
+    },
+    {
+      "date": "2025-02-25",
+      "inst_net": -19199,
+      "inst_long": 8737,
+      "inst_short": 512,
+      "hf_net": -19199,
+      "inst_net_change": 583
+    },
+    {
+      "date": "2025-03-04",
+      "inst_net": -18477,
+      "inst_long": 8324,
+      "inst_short": 433,
+      "hf_net": -18477,
+      "inst_net_change": 722
+    },
+    {
+      "date": "2025-03-11",
+      "inst_net": -18271,
+      "inst_long": 7930,
+      "inst_short": 596,
+      "hf_net": -18271,
+      "inst_net_change": 206
+    },
+    {
+      "date": "2025-03-18",
+      "inst_net": -17968,
+      "inst_long": 7653,
+      "inst_short": 693,
+      "hf_net": -17968,
+      "inst_net_change": 303
+    },
+    {
+      "date": "2025-03-25",
+      "inst_net": -18812,
+      "inst_long": 8235,
+      "inst_short": 644,
+      "hf_net": -18812,
+      "inst_net_change": -844
+    },
+    {
+      "date": "2025-04-01",
+      "inst_net": -17141,
+      "inst_long": 7991,
+      "inst_short": 599,
+      "hf_net": -17141,
+      "inst_net_change": 1671
+    },
+    {
+      "date": "2025-04-08",
+      "inst_net": -13945,
+      "inst_long": 7378,
+      "inst_short": 728,
+      "hf_net": -13945,
+      "inst_net_change": 3196
+    },
+    {
+      "date": "2025-04-15",
+      "inst_net": -14440,
+      "inst_long": 7300,
+      "inst_short": 559,
+      "hf_net": -14440,
+      "inst_net_change": -495
+    },
+    {
+      "date": "2025-04-22",
+      "inst_net": -16203,
+      "inst_long": 8105,
+      "inst_short": 904,
+      "hf_net": -16203,
+      "inst_net_change": -1763
+    },
+    {
+      "date": "2025-04-29",
+      "inst_net": -15898,
+      "inst_long": 8128,
+      "inst_short": 509,
+      "hf_net": -15898,
+      "inst_net_change": 305
+    },
+    {
+      "date": "2025-05-06",
+      "inst_net": -16276,
+      "inst_long": 7805,
+      "inst_short": 423,
+      "hf_net": -16276,
+      "inst_net_change": -378
+    },
+    {
+      "date": "2025-05-13",
+      "inst_net": -14139,
+      "inst_long": 8623,
+      "inst_short": 451,
+      "hf_net": -14139,
+      "inst_net_change": 2137
+    },
+    {
+      "date": "2025-05-20",
+      "inst_net": -14711,
+      "inst_long": 8943,
+      "inst_short": 439,
+      "hf_net": -14711,
+      "inst_net_change": -572
+    },
+    {
+      "date": "2025-05-27",
+      "inst_net": -15261,
+      "inst_long": 9148,
+      "inst_short": 414,
+      "hf_net": -15261,
+      "inst_net_change": -550
+    },
+    {
+      "date": "2025-06-03",
+      "inst_net": -14444,
+      "inst_long": 8591,
+      "inst_short": 449,
+      "hf_net": -14444,
+      "inst_net_change": 817
+    },
+    {
+      "date": "2025-06-10",
+      "inst_net": -15136,
+      "inst_long": 8737,
+      "inst_short": 525,
+      "hf_net": -15136,
+      "inst_net_change": -692
+    },
+    {
+      "date": "2025-06-17",
+      "inst_net": -15018,
+      "inst_long": 8675,
+      "inst_short": 551,
+      "hf_net": -15018,
+      "inst_net_change": 118
+    },
+    {
+      "date": "2025-06-24",
+      "inst_net": -15683,
+      "inst_long": 8747,
+      "inst_short": 516,
+      "hf_net": -15683,
+      "inst_net_change": -665
+    },
+    {
+      "date": "2025-07-01",
+      "inst_net": -14641,
+      "inst_long": 8519,
+      "inst_short": 549,
+      "hf_net": -14641,
+      "inst_net_change": 1042
+    },
+    {
+      "date": "2025-07-08",
+      "inst_net": -14824,
+      "inst_long": 8955,
+      "inst_short": 516,
+      "hf_net": -14824,
+      "inst_net_change": -183
+    },
+    {
+      "date": "2025-07-15",
+      "inst_net": -14347,
+      "inst_long": 9199,
+      "inst_short": 465,
+      "hf_net": -14347,
+      "inst_net_change": 477
+    },
+    {
+      "date": "2025-07-22",
+      "inst_net": -14983,
+      "inst_long": 9131,
+      "inst_short": 458,
+      "hf_net": -14983,
+      "inst_net_change": -636
+    },
+    {
+      "date": "2025-07-29",
+      "inst_net": -15808,
+      "inst_long": 9003,
+      "inst_short": 455,
+      "hf_net": -15808,
+      "inst_net_change": -825
+    },
+    {
+      "date": "2025-08-05",
+      "inst_net": -14098,
+      "inst_long": 8379,
+      "inst_short": 420,
+      "hf_net": -14098,
+      "inst_net_change": 1710
+    },
+    {
+      "date": "2025-08-12",
+      "inst_net": -15616,
+      "inst_long": 8858,
+      "inst_short": 420,
+      "hf_net": -15616,
+      "inst_net_change": -1518
+    },
+    {
+      "date": "2025-08-19",
+      "inst_net": -14826,
+      "inst_long": 8401,
+      "inst_short": 439,
+      "hf_net": -14826,
+      "inst_net_change": 790
+    },
+    {
+      "date": "2025-08-26",
+      "inst_net": -15006,
+      "inst_long": 8397,
+      "inst_short": 441,
+      "hf_net": -15006,
+      "inst_net_change": -180
+    },
+    {
+      "date": "2025-09-02",
+      "inst_net": -15322,
+      "inst_long": 8709,
+      "inst_short": 510,
+      "hf_net": -15322,
+      "inst_net_change": -316
+    },
+    {
+      "date": "2025-09-09",
+      "inst_net": -14751,
+      "inst_long": 8560,
+      "inst_short": 714,
+      "hf_net": -14751,
+      "inst_net_change": 571
+    },
+    {
+      "date": "2025-09-16",
+      "inst_net": -16369,
+      "inst_long": 9038,
+      "inst_short": 771,
+      "hf_net": -16369,
+      "inst_net_change": -1618
+    },
+    {
+      "date": "2025-09-23",
+      "inst_net": -14393,
+      "inst_long": 8612,
+      "inst_short": 727,
+      "hf_net": -14393,
+      "inst_net_change": 1976
+    },
+    {
+      "date": "2025-09-30",
+      "inst_net": -13873,
+      "inst_long": 8734,
+      "inst_short": 609,
+      "hf_net": -13873,
+      "inst_net_change": 520
+    },
+    {
+      "date": "2025-10-07",
+      "inst_net": -14047,
+      "inst_long": 9212,
+      "inst_short": 612,
+      "hf_net": -14047,
+      "inst_net_change": -174
+    },
+    {
+      "date": "2025-10-14",
+      "inst_net": -13431,
+      "inst_long": 8651,
+      "inst_short": 608,
+      "hf_net": -13431,
+      "inst_net_change": 616
+    },
+    {
+      "date": "2025-10-21",
+      "inst_net": -14002,
+      "inst_long": 8475,
+      "inst_short": 633,
+      "hf_net": -14002,
+      "inst_net_change": -571
+    },
+    {
+      "date": "2025-10-28",
+      "inst_net": -17223,
+      "inst_long": 8622,
+      "inst_short": 677,
+      "hf_net": -17223,
+      "inst_net_change": -3221
+    },
+    {
+      "date": "2025-11-04",
+      "inst_net": -15168,
+      "inst_long": 7682,
+      "inst_short": 714,
+      "hf_net": -15168,
+      "inst_net_change": 2055
+    },
+    {
+      "date": "2025-11-10",
+      "inst_net": -15810,
+      "inst_long": 8073,
+      "inst_short": 647,
+      "hf_net": -15810,
+      "inst_net_change": -642
+    },
+    {
+      "date": "2025-11-18",
+      "inst_net": -13564,
+      "inst_long": 7123,
+      "inst_short": 875,
+      "hf_net": -13564,
+      "inst_net_change": 2246
+    },
+    {
+      "date": "2025-11-25",
+      "inst_net": -13764,
+      "inst_long": 7227,
+      "inst_short": 727,
+      "hf_net": -13764,
+      "inst_net_change": -200
+    },
+    {
+      "date": "2025-12-02",
+      "inst_net": -14126,
+      "inst_long": 7590,
+      "inst_short": 704,
+      "hf_net": -14126,
+      "inst_net_change": -362
+    },
+    {
+      "date": "2025-12-09",
+      "inst_net": -14870,
+      "inst_long": 8098,
+      "inst_short": 746,
+      "hf_net": -14870,
+      "inst_net_change": -744
+    },
+    {
+      "date": "2025-12-16",
+      "inst_net": -12543,
+      "inst_long": 7511,
+      "inst_short": 686,
+      "hf_net": -12543,
+      "inst_net_change": 2327
+    },
+    {
+      "date": "2025-12-23",
+      "inst_net": -11251,
+      "inst_long": 6820,
+      "inst_short": 572,
+      "hf_net": -11251,
+      "inst_net_change": 1292
+    },
+    {
+      "date": "2025-12-30",
+      "inst_net": -10911,
+      "inst_long": 7075,
+      "inst_short": 478,
+      "hf_net": -10911,
+      "inst_net_change": 340
+    },
+    {
+      "date": "2026-01-06",
+      "inst_net": -11740,
+      "inst_long": 7677,
+      "inst_short": 752,
+      "hf_net": -11740,
+      "inst_net_change": -829
+    },
+    {
+      "date": "2026-01-13",
+      "inst_net": -12718,
+      "inst_long": 8085,
+      "inst_short": 736,
+      "hf_net": -12718,
+      "inst_net_change": -978
+    },
+    {
+      "date": "2026-01-20",
+      "inst_net": -11558,
+      "inst_long": 7800,
+      "inst_short": 548,
+      "hf_net": -11558,
+      "inst_net_change": 1160
+    },
+    {
+      "date": "2026-01-27",
+      "inst_net": -12396,
+      "inst_long": 7769,
+      "inst_short": 491,
+      "hf_net": -12396,
+      "inst_net_change": -838
+    },
+    {
+      "date": "2026-02-03",
+      "inst_net": -11425,
+      "inst_long": 7193,
+      "inst_short": 891,
+      "hf_net": -11425,
+      "inst_net_change": 971
+    },
+    {
+      "date": "2026-02-10",
+      "inst_net": -9499,
+      "inst_long": 7476,
+      "inst_short": 972,
+      "hf_net": -9499,
+      "inst_net_change": 1926
+    },
+    {
+      "date": "2026-02-17",
+      "inst_net": -8876,
+      "inst_long": 6957,
+      "inst_short": 1019,
+      "hf_net": -8876,
+      "inst_net_change": 623
+    },
+    {
+      "date": "2026-02-24",
+      "inst_net": -8236,
+      "inst_long": 6662,
+      "inst_short": 944,
+      "hf_net": -8236,
+      "inst_net_change": 640
+    },
+    {
+      "date": "2026-03-03",
+      "inst_net": -9195,
+      "inst_long": 7154,
+      "inst_short": 1129,
+      "hf_net": -9195,
+      "inst_net_change": -959
+    },
+    {
+      "date": "2026-03-10",
+      "inst_net": -9679,
+      "inst_long": 6875,
+      "inst_short": 984,
+      "hf_net": -9679,
+      "inst_net_change": -484
+    },
+    {
+      "date": "2026-03-17",
+      "inst_net": -10860,
+      "inst_long": 6954,
+      "inst_short": 1068,
+      "hf_net": -10860,
+      "inst_net_change": -1181
+    },
+    {
+      "date": "2026-03-24",
+      "inst_net": -8351,
+      "inst_long": 6219,
+      "inst_short": 1151,
+      "hf_net": -8351,
+      "inst_net_change": 2509
+    },
+    {
+      "date": "2026-03-31",
+      "inst_net": -8052,
+      "inst_long": 5965,
+      "inst_short": 1161,
+      "hf_net": -8052,
+      "inst_net_change": 299
+    },
+    {
+      "date": "2026-04-07",
+      "inst_net": -8427,
+      "inst_long": 6022,
+      "inst_short": 1449,
+      "hf_net": -8427,
+      "inst_net_change": -375
+    }
+  ],
+  "source": "CFTC Traders in Financial Futures (TFF) \u2014 Official US Government Data",
+  "update_frequency": "Weekly (every Friday for Tuesday data)"
+}
