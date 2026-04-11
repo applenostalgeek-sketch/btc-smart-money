@@ -196,8 +196,8 @@
 const canvas = document.getElementById('ocean');
 const ctx    = canvas.getContext('2d');
 let time = 0;
-let currentFG   = 50;   // direction des poissons (basé sur funding)
-let lastPerps   = null; // données Binance brutes, pour le courant
+let lastPerps   = null; // données Binance — direction/force du courant retail
+let lastEtfNet7 = null; // flux ETF 7j — direction et nombre des poissons
 let btcNeonText = '';   // shown as neon behind fish
 
 function resizeCanvas() {
@@ -215,10 +215,10 @@ let FISH_COUNT = 14; // dynamique selon ETF flows, 14 = neutre par défaut
 const fishArr  = [];
 
 function setFishCount(etfNet7) {
-    // Bornes réelles 90j : min -450M$, max +652M$
-    // -450M → 5 poissons, 0 → 12, +650M → 26
-    const clamped = Math.min(650, Math.max(-450, etfNet7));
-    const target  = Math.round(5 + ((clamped + 450) / 1100) * 21);
+    // Nombre = activité institutionnelle (valeur absolue)
+    // |0| → 5 poissons (inactifs), |650M| → 26 poissons (très actifs)
+    const activity = Math.min(650, Math.abs(etfNet7));
+    const target   = Math.round(5 + (activity / 650) * 21);
     while (fishArr.length < target) fishArr.push(new Fish());
     if (fishArr.length > target) fishArr.splice(target);
     FISH_COUNT = target;
@@ -242,9 +242,11 @@ class Fish {
         this.baseY = Math.max(70, Math.min(this.baseY, h - 70));
     }
     getDir() {
-        if (currentFG <= 35) return 1;
-        if (currentFG >= 65) return -1;
-        return Math.sin(this.tailPhase * 0.3 + this.depth * 5) > 0 ? 1 : -1;
+        // Poissons = smart money : droite si institutions achètent, gauche si vendent
+        if (lastEtfNet7 === null) return 1; // défaut : droite
+        if (lastEtfNet7 > 50)  return 1;   // achètent → droite (haussier)
+        if (lastEtfNet7 < -50) return -1;  // vendent → gauche (baissier)
+        return Math.sin(this.tailPhase * 0.3 + this.depth * 5) > 0 ? 1 : -1; // neutre → aléatoire
     }
     update() {
         const dir = this.getDir();
@@ -261,9 +263,10 @@ class Fish {
         const x = this.x, y = this.baseY + this.yOffset;
         const s = this.size, t = this.tailPhase;
         let bodyCol, finCol;
-        if (currentFG <= 30)       { bodyCol = '#38bdf8'; finCol = '#0369a1'; }
-        else if (currentFG >= 70)  { bodyCol = '#fbbf24'; finCol = '#b45309'; }
-        else                        { bodyCol = '#86efac'; finCol = '#15803d'; }
+        const net = lastEtfNet7 ?? 0;
+        if (net > 100)       { bodyCol = '#38bdf8'; finCol = '#0369a1'; }  // institutions achètent → bleu
+        else if (net < -100) { bodyCol = '#f87171'; finCol = '#b91c1c'; }  // vendent → rouge
+        else                  { bodyCol = '#86efac'; finCol = '#15803d'; } // neutre → vert
 
         ctx.save();
         ctx.translate(x, y);
@@ -612,10 +615,10 @@ function computeVerdict(perps, etfNet7) {
 
 // ── Update overlay card ──────────────────────────────────────
 function updateOverlay(perps, btc, cotRaw, etf) {
-    currentFG = perpsToPseudoFG(perps);
-    lastPerps = perps; // pour perpsCurrentParams() dans drawOcean
+    lastPerps   = perps;
+    lastEtfNet7 = etf?.net_7d ?? null;
     if (btc.usd > 0) btcNeonText = '$' + Math.round(btc.usd).toLocaleString('en-US');
-    if (etf?.net_7d != null) setFishCount(etf.net_7d);
+    if (lastEtfNet7 !== null) setFishCount(lastEtfNet7);
 
     // Timestamp bas-droite — source la plus récente
     const lu = etf?.last_updated || cot?.last_updated || null;
