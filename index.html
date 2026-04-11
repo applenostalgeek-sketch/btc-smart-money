@@ -196,8 +196,9 @@
 const canvas = document.getElementById('ocean');
 const ctx    = canvas.getContext('2d');
 let time = 0;
-let currentFG = 50;
-let btcNeonText = ''; // shown as neon behind fish
+let currentFG   = 50;   // direction des poissons (basé sur funding)
+let lastPerps   = null; // données Binance brutes, pour le courant
+let btcNeonText = '';   // shown as neon behind fish
 
 function resizeCanvas() {
     canvas.width  = window.innerWidth;
@@ -214,8 +215,10 @@ let FISH_COUNT = 14; // dynamique selon ETF flows, 14 = neutre par défaut
 const fishArr  = [];
 
 function setFishCount(etfNet7) {
-    // -500M$ → 6 poissons, 0 → 14, +1000M$ → 26
-    const target = Math.round(Math.min(26, Math.max(6, 14 + (etfNet7 / 1000) * 12)));
+    // Bornes réelles 90j : min -450M$, max +652M$
+    // -450M → 5 poissons, 0 → 12, +650M → 26
+    const clamped = Math.min(650, Math.max(-450, etfNet7));
+    const target  = Math.round(5 + ((clamped + 450) / 1100) * 21);
     while (fishArr.length < target) fishArr.push(new Fish());
     if (fishArr.length > target) fishArr.splice(target);
     FISH_COUNT = target;
@@ -364,6 +367,26 @@ function drawBTCNeon() {
     ctx.restore();
 }
 
+// ── Courant retail : force et direction depuis données réelles ─
+function perpsCurrentParams() {
+    if (!lastPerps) return { dir: 0, strength: 0 };
+    const { avgFunding, oiUSD } = lastPerps;
+
+    // Direction : signe du funding rate
+    const dir = avgFunding > 0.000015 ? 1 : avgFunding < -0.000015 ? -1 : 0;
+
+    // OI : normalise $3B→$15B → 0→1 (historique BTC perps)
+    const oiNorm = Math.min(1, Math.max(0, (oiUSD - 3e9) / 12e9));
+
+    // Funding : normalise 0→0.0003 → 0→1 (extrême = ±0.03%/8h)
+    const fundNorm = Math.min(1, Math.abs(avgFunding) / 0.0003);
+
+    // Force combinée : funding pèse plus (signal directionnel), OI = volume
+    const strength = 0.35 * oiNorm + 0.65 * fundNorm;
+
+    return { dir, strength };
+}
+
 // ── Ocean background ─────────────────────────────────────────
 function drawOcean() {
     const w = canvas.width || 1200, h = canvas.height || 700;
@@ -390,9 +413,8 @@ function drawOcean() {
     }
     ctx.restore();
 
-    // Water current
-    const retailDir = currentFG <= 40 ? -1 : currentFG >= 60 ? 1 : 0;
-    const strength  = Math.abs(currentFG - 50) / 50;
+    // Water current — force et direction depuis OI + funding réels
+    const { dir: retailDir, strength } = perpsCurrentParams();
 
     if (retailDir !== 0) {
         ctx.save();
@@ -591,6 +613,7 @@ function computeVerdict(perps, etfNet7) {
 // ── Update overlay card ──────────────────────────────────────
 function updateOverlay(perps, btc, cotRaw, etf) {
     currentFG = perpsToPseudoFG(perps);
+    lastPerps = perps; // pour perpsCurrentParams() dans drawOcean
     if (btc.usd > 0) btcNeonText = '$' + Math.round(btc.usd).toLocaleString('en-US');
     if (etf?.net_7d != null) setFishCount(etf.net_7d);
 
