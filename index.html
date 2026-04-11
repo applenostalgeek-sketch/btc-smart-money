@@ -264,9 +264,9 @@ class Fish {
         const s = this.size, t = this.tailPhase;
         let bodyCol, finCol;
         const net = lastEtfNet7 ?? 0;
-        if (net > 100)       { bodyCol = '#38bdf8'; finCol = '#0369a1'; }  // institutions achètent → bleu
+        if (net > 100)       { bodyCol = '#4ade80'; finCol = '#15803d'; }  // achètent → vert
         else if (net < -100) { bodyCol = '#f87171'; finCol = '#b91c1c'; }  // vendent → rouge
-        else                  { bodyCol = '#86efac'; finCol = '#15803d'; } // neutre → vert
+        else                  { bodyCol = '#94a3b8'; finCol = '#475569'; } // neutre → gris
 
         ctx.save();
         ctx.translate(x, y);
@@ -421,7 +421,8 @@ function drawOcean() {
 
     if (retailDir !== 0) {
         ctx.save();
-        const baseColor = retailDir < 0 ? '56,189,248' : '248,113,113';
+        // Courant : vert si retail net long (haussier), rouge si net short (baissier)
+        const baseColor = retailDir > 0 ? '74,222,128' : '248,113,113';
         // Streaks / current lines
         for (let row = 0; row < 11; row++) {
             const baseY = h / 11 * (row + 0.5);
@@ -450,7 +451,7 @@ function drawOcean() {
             ctx.beginPath();
             if (retailDir > 0) { ctx.moveTo(ax-as, ay-as*0.6); ctx.lineTo(ax, ay); ctx.lineTo(ax-as, ay+as*0.6); }
             else               { ctx.moveTo(ax+as, ay-as*0.6); ctx.lineTo(ax, ay); ctx.lineTo(ax+as, ay+as*0.6); }
-            ctx.strokeStyle = retailDir < 0 ? '#38bdf8' : '#f87171';
+            ctx.strokeStyle = retailDir > 0 ? '#4ade80' : '#f87171';
             ctx.lineWidth = 1.5; ctx.lineJoin = 'round'; ctx.stroke();
         }
         ctx.restore();
