@@ -423,35 +423,49 @@ function drawOcean() {
         ctx.save();
         // Courant : vert si retail net long (haussier), rouge si net short (baissier)
         const baseColor = retailDir > 0 ? '74,222,128' : '248,113,113';
-        // Streaks / current lines
+        const hexColor  = retailDir > 0 ? '#4ade80' : '#f87171';
+
+        // Streaks avec fondu — gradient transparent→visible→transparent
         for (let row = 0; row < 11; row++) {
             const baseY = h / 11 * (row + 0.5);
             const numL  = 3 + Math.floor(strength * 4);
             for (let l = 0; l < numL + 2; l++) {
-                const rawX = ((time * 48 * retailDir + l * (w / numL)) % w + w) % w;
-                const la   = 0.15 + strength * 0.20;
-                const ll   = 70 + strength * 55;
-                ctx.globalAlpha = la;
+                const rawX = ((time * 95 * retailDir + l * (w / numL)) % w + w) % w;
+                const ll   = 120 + strength * 80;
+                const endX = rawX + ll * retailDir;
+
+                // Gradient fondu sur la longueur du streak
+                const gx0 = retailDir > 0 ? rawX : endX;
+                const gx1 = retailDir > 0 ? endX : rawX;
+                const grad = ctx.createLinearGradient(gx0, 0, gx1, 0);
+                const peak = 0.25 + strength * 0.30;
+                grad.addColorStop(0,    `rgba(${baseColor},0)`);
+                grad.addColorStop(0.35, `rgba(${baseColor},${peak})`);
+                grad.addColorStop(0.65, `rgba(${baseColor},${peak})`);
+                grad.addColorStop(1,    `rgba(${baseColor},0)`);
+
+                ctx.globalAlpha = 1;
                 ctx.beginPath();
-                ctx.moveTo(rawX, baseY + Math.sin(rawX * 0.02 + time) * 5);
-                for (let step = 0; step <= ll; step += 7) {
+                ctx.moveTo(rawX, baseY + Math.sin(rawX * 0.02 + time) * 6);
+                for (let step = 0; step <= ll; step += 6) {
                     const lx = rawX + step * retailDir;
-                    ctx.lineTo((lx + w) % w, baseY + Math.sin((rawX + step) * 0.025 + time * 1.5) * 5);
+                    ctx.lineTo((lx % w + w) % w, baseY + Math.sin((rawX + step) * 0.025 + time * 1.8) * 6);
                 }
-                ctx.strokeStyle = `rgba(${baseColor},${la})`; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.strokeStyle = grad; ctx.lineWidth = 1.5; ctx.stroke();
             }
         }
-        // Arrow heads — quelques-unes seulement, bien espacées
-        const aa = 0.32 + strength * 0.28;
+
+        // Flèches — rapides, discrètes
+        const aa = 0.30 + strength * 0.25;
         for (let a = 0; a < 7; a++) {
-            const ax = ((time * 40 * retailDir + a * (w / 6)) % w + w) % w;
+            const ax = ((time * 80 * retailDir + a * (w / 6)) % w + w) % w;
             const ay = h * 0.18 + a * (h * 0.65 / 6);
             const as = 6 + strength * 3;
             ctx.globalAlpha = aa;
             ctx.beginPath();
             if (retailDir > 0) { ctx.moveTo(ax-as, ay-as*0.6); ctx.lineTo(ax, ay); ctx.lineTo(ax-as, ay+as*0.6); }
             else               { ctx.moveTo(ax+as, ay-as*0.6); ctx.lineTo(ax, ay); ctx.lineTo(ax+as, ay+as*0.6); }
-            ctx.strokeStyle = retailDir > 0 ? '#4ade80' : '#f87171';
+            ctx.strokeStyle = hexColor;
             ctx.lineWidth = 1.5; ctx.lineJoin = 'round'; ctx.stroke();
         }
         ctx.restore();
