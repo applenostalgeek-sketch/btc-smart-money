@@ -429,7 +429,7 @@ function drawOcean() {
             const numL  = 3 + Math.floor(strength * 4);
             for (let l = 0; l < numL + 2; l++) {
                 const rawX = ((time * 48 * retailDir + l * (w / numL)) % w + w) % w;
-                const la   = 0.055 + strength * 0.09;
+                const la   = 0.09 + strength * 0.13;
                 const ll   = 70 + strength * 55;
                 ctx.globalAlpha = la;
                 ctx.beginPath();
@@ -442,7 +442,7 @@ function drawOcean() {
             }
         }
         // Arrow heads — quelques-unes seulement, bien espacées
-        const aa = 0.13 + strength * 0.12;
+        const aa = 0.20 + strength * 0.18;
         for (let a = 0; a < 7; a++) {
             const ax = ((time * 40 * retailDir + a * (w / 6)) % w + w) % w;
             const ay = h * 0.18 + a * (h * 0.65 / 6);

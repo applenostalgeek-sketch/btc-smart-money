@@ -2,8 +2,8 @@ name: Update market data
 
 on:
   schedule:
-    # Tous les jours à 8h UTC (après clôture US la veille)
-    - cron: '0 8 * * *'
+    # Mercredi et samedi à 8h UTC
+    - cron: '0 8 * * 3,6'
   workflow_dispatch: # déclenchement manuel possible
 
 jobs:
