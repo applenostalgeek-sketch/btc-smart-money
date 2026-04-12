@@ -196,9 +196,11 @@
 const canvas = document.getElementById('ocean');
 const ctx    = canvas.getContext('2d');
 let time = 0;
-let lastPerps   = null; // données Binance — direction/force du courant retail
-let lastEtfNet7 = null; // flux ETF 7j — direction et nombre des poissons
-let btcNeonText = '';   // shown as neon behind fish
+let lastPerps   = null;
+let lastEtfNet7 = null;
+let btcNeonText = '';
+
+function isMobile() { return window.innerWidth < 600; }
 
 function resizeCanvas() {
     canvas.width  = window.innerWidth;
@@ -215,10 +217,9 @@ let FISH_COUNT = 14; // dynamique selon ETF flows, 14 = neutre par défaut
 const fishArr  = [];
 
 function setFishCount(etfNet7) {
-    // Nombre = activité institutionnelle (valeur absolue)
-    // |0| → 5 poissons (inactifs), |650M| → 26 poissons (très actifs)
     const activity = Math.min(650, Math.abs(etfNet7));
-    const target   = Math.round(5 + (activity / 650) * 21);
+    let target     = Math.round(5 + (activity / 650) * 21);
+    if (isMobile()) target = Math.round(target * 0.45); // moitié moins sur mobile
     while (fishArr.length < target) fishArr.push(new Fish());
     if (fishArr.length > target) fishArr.splice(target);
     FISH_COUNT = target;
@@ -332,7 +333,8 @@ function updateBubbles() {
     });
 }
 function drawBubbles() {
-    bubbles.forEach(b => {
+    const limit = isMobile() ? Math.floor(bubbles.length * 0.5) : bubbles.length;
+    bubbles.slice(0, limit).forEach(b => {
         ctx.save(); ctx.globalAlpha = b.opacity;
         ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(148,210,255,0.9)'; ctx.lineWidth = 1.2; ctx.stroke();
@@ -426,9 +428,10 @@ function drawOcean() {
         const hexColor  = retailDir > 0 ? '#4ade80' : '#f87171';
 
         // Streaks avec fondu — gradient transparent→visible→transparent
-        for (let row = 0; row < 11; row++) {
-            const baseY = h / 11 * (row + 0.5);
-            const numL  = 3 + Math.floor(strength * 4);
+        const rows = isMobile() ? 6 : 11;
+        for (let row = 0; row < rows; row++) {
+            const baseY = h / rows * (row + 0.5);
+            const numL  = isMobile() ? 2 : 3 + Math.floor(strength * 4);
             for (let l = 0; l < numL + 2; l++) {
                 const rawX = ((time * 95 * retailDir + l * (w / numL)) % w + w) % w;
                 const ll   = 120 + strength * 80;
