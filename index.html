@@ -201,8 +201,6 @@ let lastEtfNet7 = null;
 let btcNeonText = '';
 
 function isMobile() { return window.innerWidth < 600; }
-let cardReserved = 52; // px réservés en bas pour la carte mobile
-function safeH() { return (canvas.height || 700) - (isMobile() ? cardReserved : 0); }
 
 function resizeCanvas() {
     canvas.width  = window.innerWidth;
@@ -231,7 +229,7 @@ class Fish {
     constructor() {
         this.depth     = 0.25 + Math.random() * 0.75;
         this.x         = Math.random() * (canvas.width  || 1200);
-        this.baseY     = 70 + Math.random() * (safeH() - 140);
+        this.baseY     = 70 + Math.random() * ((canvas.height || 700) - 140);
         this.yOffset   = 0;
         this.yDrift    = (Math.random() - 0.5) * 0.18;
         this.tailPhase = Math.random() * Math.PI * 2;
@@ -241,7 +239,8 @@ class Fish {
         this.opacity   = 0.3 + this.depth * 0.65;
     }
     clampY() {
-        this.baseY = Math.max(70, Math.min(this.baseY, safeH() - 70));
+        const h = canvas.height || 700;
+        this.baseY = Math.max(70, Math.min(this.baseY, h - 70));
     }
     getDir() {
         // Poissons = smart money : droite si institutions achètent, gauche si vendent
@@ -746,9 +745,6 @@ init();
     function doToggle() {
         if (!isMobile()) return;
         card.classList.toggle('collapsed');
-        const isCollapsed = card.classList.contains('collapsed');
-        cardReserved = isCollapsed ? 52 : card.offsetHeight || 220;
-        fishArr.forEach(f => f.clampY());
     }
 
     handle.addEventListener('click', doToggle);
