@@ -316,12 +316,12 @@ class Fish {
 for (let i = 0; i < FISH_COUNT; i++) fishArr.push(new Fish());
 
 // ── Bubbles ─────────────────────────────────────────────────
-const bubbles = Array.from({length: 45}, () => ({
+const bubbles = Array.from({length: 55}, () => ({
     x: Math.random() * 1200, y: Math.random() * 800,
-    r: 0.8 + Math.random() * 4,
+    r: 1 + Math.random() * 5,
     speed: 0.15 + Math.random() * 0.5,
     drift: (Math.random() - 0.5) * 0.28,
-    opacity: 0.12 + Math.random() * 0.22,
+    opacity: 0.22 + Math.random() * 0.38,
 }));
 function updateBubbles() {
     const w = canvas.width || 1200, h = canvas.height || 700;
@@ -335,7 +335,7 @@ function drawBubbles() {
     bubbles.forEach(b => {
         ctx.save(); ctx.globalAlpha = b.opacity;
         ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(148,210,255,0.7)'; ctx.lineWidth = 0.8; ctx.stroke();
+        ctx.strokeStyle = 'rgba(148,210,255,0.9)'; ctx.lineWidth = 1.2; ctx.stroke();
         ctx.restore();
     });
 }
@@ -429,7 +429,7 @@ function drawOcean() {
             const numL  = 3 + Math.floor(strength * 4);
             for (let l = 0; l < numL + 2; l++) {
                 const rawX = ((time * 48 * retailDir + l * (w / numL)) % w + w) % w;
-                const la   = 0.09 + strength * 0.13;
+                const la   = 0.15 + strength * 0.20;
                 const ll   = 70 + strength * 55;
                 ctx.globalAlpha = la;
                 ctx.beginPath();
@@ -438,11 +438,11 @@ function drawOcean() {
                     const lx = rawX + step * retailDir;
                     ctx.lineTo((lx + w) % w, baseY + Math.sin((rawX + step) * 0.025 + time * 1.5) * 5);
                 }
-                ctx.strokeStyle = `rgba(${baseColor},${la})`; ctx.lineWidth = 1; ctx.stroke();
+                ctx.strokeStyle = `rgba(${baseColor},${la})`; ctx.lineWidth = 1.5; ctx.stroke();
             }
         }
         // Arrow heads — quelques-unes seulement, bien espacées
-        const aa = 0.20 + strength * 0.18;
+        const aa = 0.32 + strength * 0.28;
         for (let a = 0; a < 7; a++) {
             const ax = ((time * 40 * retailDir + a * (w / 6)) % w + w) % w;
             const ay = h * 0.18 + a * (h * 0.65 / 6);
