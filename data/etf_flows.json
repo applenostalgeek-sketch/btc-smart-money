@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-04-15 19:45 UTC",
-  "source": "iShares IBIT API (shares \u00d7 price, T+1 settlement) + AUM-weighted total estimate",
+  "last_updated": "2026-04-15 19:47 UTC",
+  "source": "Farside Investors (via existing historical data) + iShares IBIT API extension",
   "latest": {
     "date": "2026-04-13",
     "ibit": 35.4,
