@@ -1,42 +1,17 @@
 {
-  "last_updated": "2026-04-12 09:39 UTC",
-  "source": "Farside Investors \u2014 https://farside.co.uk/bitcoin-etf-flow-all-data/",
+  "last_updated": "2026-04-15 19:45 UTC",
+  "source": "iShares IBIT API (shares \u00d7 price, T+1 settlement) + AUM-weighted total estimate",
   "latest": {
-    "date": "2026-04-10",
-    "ibit": 137.6,
-    "fbtc": 78.0,
-    "bitb": 9.5,
-    "arkb": 3.6,
-    "btco": 0.0,
-    "ezbc": 0.0,
-    "brrr": 0.0,
-    "hodl": 2.6,
-    "btcw": 0.0,
-    "gbtc": 0.0,
-    "btc": 9.1,
-    "total": 240.4
+    "date": "2026-04-13",
+    "ibit": 35.4,
+    "total": 53.7
   },
   "signal": "strong_inflow",
-  "net_7d": 652.2,
-  "net_30d": 1940.3,
+  "net_7d": 879.6,
+  "net_30d": 2021.5,
   "direction": "inflow",
-  "streak": 2,
+  "streak": 3,
   "history": [
-    {
-      "date": "2025-12-01",
-      "ibit": -65.9,
-      "fbtc": 67.0,
-      "bitb": 0.0,
-      "arkb": 7.4,
-      "btco": 0.0,
-      "ezbc": 0.0,
-      "brrr": 0.0,
-      "hodl": 0.0,
-      "btcw": 0.0,
-      "gbtc": 0.0,
-      "btc": 0.0,
-      "total": 8.5
-    },
     {
       "date": "2025-12-02",
       "ibit": 120.1,
@@ -1373,6 +1348,11 @@
       "gbtc": 0.0,
       "btc": 9.1,
       "total": 240.4
+    },
+    {
+      "date": "2026-04-13",
+      "ibit": 35.4,
+      "total": 53.7
     }
   ]
 }
