@@ -1,5 +1,9 @@
 {
+<<<<<<< Updated upstream
   "last_updated": "2026-04-15 19:47 UTC",
+=======
+  "last_updated": "2026-04-15 19:48 UTC",
+>>>>>>> Stashed changes
   "source": "Farside Investors (via existing historical data) + iShares IBIT API extension",
   "latest": {
     "date": "2026-04-13",
