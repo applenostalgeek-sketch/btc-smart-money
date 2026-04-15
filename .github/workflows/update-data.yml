@@ -35,13 +35,18 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git stash --include-untracked
-          git pull --rebase origin master
-          git stash pop || true
+          # Save our freshly computed data files before pull
+          cp data/etf_flows.json /tmp/etf_flows_new.json
+          cp data/cot_data.json /tmp/cot_data_new.json
+          # Pull latest (other parallel runs may have pushed)
+          git pull --rebase origin master || true
+          # Restore our fresh computed files (overwrite whatever was pulled)
+          cp /tmp/etf_flows_new.json data/etf_flows.json
+          cp /tmp/cot_data_new.json data/cot_data.json
           git add data/etf_flows.json data/cot_data.json
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
             git commit -m "chore: update market data $(date -u '+%Y-%m-%d')"
-            git push
+            git push || (git pull --rebase origin master && git push)
           fi

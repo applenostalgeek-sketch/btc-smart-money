@@ -198,16 +198,47 @@ def compute_ibit_flows(shares_by_date, prices):
 # ──────────────────────────────────────────────
 
 def load_existing_history():
-    """Load existing etf_flows.json history."""
+    """Load existing etf_flows.json history. Handles corrupted files gracefully."""
     try:
         with open(JSON_PATH) as f:
-            d = json.load(f)
+            content = f.read()
+
+        # Check for git merge conflict markers (from parallel workflow runs)
+        if '<<<<<<' in content or '>>>>>>>' in content:
+            print('[4] WARNING: etf_flows.json has git merge conflict markers — cleaning...')
+            # Strip conflict markers: keep "ours" side (everything between <<<< and ====)
+            import re
+            # Remove conflict blocks, keeping the "ours" side
+            clean = re.sub(r'<<<<<<[^\n]*\n(.*?)=======[^\n]*\n.*?>>>>>>>[^\n]*\n',
+                           r'\1', content, flags=re.DOTALL)
+            try:
+                d = json.loads(clean)
+            except json.JSONDecodeError:
+                # If still broken, try the other side
+                clean2 = re.sub(r'<<<<<<[^\n]*\n.*?=======[^\n]*\n(.*?)>>>>>>>[^\n]*\n',
+                                r'\1', content, flags=re.DOTALL)
+                try:
+                    d = json.loads(clean2)
+                except json.JSONDecodeError:
+                    print('[4] Cannot repair JSON, starting fresh')
+                    return []
+
+        else:
+            d = json.loads(content)
+
         hist = d.get('history', [])
-        print(f'[4] Existing history: {len(hist)} entries '
-              f'({hist[0]["date"]} → {hist[-1]["date"]})' if hist else '[4] No existing history')
+        if hist:
+            print(f'[4] Existing history: {len(hist)} entries '
+                  f'({hist[0]["date"]} → {hist[-1]["date"]})')
+        else:
+            print('[4] No existing history in JSON')
         return hist
-    except (FileNotFoundError, json.JSONDecodeError):
-        print('[4] No existing JSON, starting fresh')
+
+    except FileNotFoundError:
+        print('[4] No existing JSON file, starting fresh')
+        return []
+    except json.JSONDecodeError as e:
+        print(f'[4] JSON parse error ({e}), starting fresh')
         return []
 
 
