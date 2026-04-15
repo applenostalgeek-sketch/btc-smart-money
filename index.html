@@ -149,11 +149,11 @@
 <div id="legend">
     <div class="legend-item">
         <div class="legend-dot" style="background:rgba(56,189,248,0.85)"></div>
-        Poissons = smart money
+        🐟 Poissons = institutions (ETF)
     </div>
     <div class="legend-item">
         <div class="legend-dot" style="background:rgba(150,150,255,0.5)"></div>
-        Courant = sentiment retail
+        〰️ Courant = retail levier (Binance)
     </div>
 </div>
 
@@ -373,11 +373,15 @@ function drawBTCNeon() {
 }
 
 // ── Courant retail : force et direction depuis données réelles ─
+// Courant = sentiment retail levier (Binance perps)
+// dir > 0 (droite) = retail net long (funding positif = longs paient les shorts)
+// dir < 0 (gauche) = retail net short (funding négatif = shorts paient les longs)
+// Cohérence : même convention que les poissons (droite = haussier, gauche = baissier)
 function perpsCurrentParams() {
     if (!lastPerps) return { dir: 0, strength: 0 };
     const { avgFunding, oiUSD } = lastPerps;
 
-    // Direction : signe du funding rate
+    // Direction : signe du funding rate (seuil ±0.0015%/8h pour filtrer le bruit)
     const dir = avgFunding > 0.000015 ? 1 : avgFunding < -0.000015 ? -1 : 0;
 
     // OI : normalise $3B→$15B → 0→1 (historique BTC perps)
@@ -638,9 +642,17 @@ function updateOverlay(perps, btc, cotRaw, etf) {
     if (btc.usd > 0) btcNeonText = '$' + Math.round(btc.usd).toLocaleString('en-US');
     if (lastEtfNet7 !== null) setFishCount(lastEtfNet7);
 
-    // Timestamp bas-droite — source la plus récente
-    const lu = etf?.last_updated || cot?.last_updated || null;
-    if (lu) document.getElementById('last-updated').textContent = 'ETF : ' + lu;
+    // Timestamp bas-droite — date de la donnée ETF (ce que l'utilisateur veut savoir)
+    const dataDate = etf?.latest?.date || null;
+    if (dataDate) {
+        try {
+            const d = new Date(dataDate + 'T00:00:00Z');
+            const fmt = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+            document.getElementById('last-updated').textContent = 'Données au ' + fmt;
+        } catch(e) {
+            document.getElementById('last-updated').textContent = 'Données au ' + dataDate;
+        }
+    }
 
     const etfNet7 = etf?.net_7d ?? null;
     const verdict = computeVerdict(perps, etfNet7);

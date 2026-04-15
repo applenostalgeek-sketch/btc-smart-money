@@ -26,24 +26,26 @@ jobs:
         continue-on-error: true
         run: python fetch_etf_flows.py
 
-      - name: Fetch COT data (CFTC — vendredi uniquement)
-        # Le fichier COT ne change qu'une fois par semaine mais on tente tous les jours
-        # fetch_cot.py gère lui-même si les données sont déjà à jour
+      - name: Fetch COT data (CFTC — hebdomadaire)
+        # Le fichier COT ne change qu'une fois par semaine (rapport du vendredi)
+        # continue-on-error: évite de bloquer le commit ETF si CFTC est indisponible
+        continue-on-error: true
         run: python fetch_cot.py
 
       - name: Commit updated data
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Save our freshly computed data files before pull
-          cp data/etf_flows.json /tmp/etf_flows_new.json
-          cp data/cot_data.json /tmp/cot_data_new.json
-          # Pull latest (other parallel runs may have pushed)
+          # Save freshly computed data files before pull (only if they exist)
+          [ -f data/etf_flows.json ] && cp data/etf_flows.json /tmp/etf_flows_new.json || true
+          [ -f data/cot_data.json  ] && cp data/cot_data.json  /tmp/cot_data_new.json  || true
+          # Pull latest remote changes (handles remote-ahead situations)
           git pull --rebase origin master || true
           # Restore our fresh computed files (overwrite whatever was pulled)
-          cp /tmp/etf_flows_new.json data/etf_flows.json
-          cp /tmp/cot_data_new.json data/cot_data.json
-          git add data/etf_flows.json data/cot_data.json
+          [ -f /tmp/etf_flows_new.json ] && cp /tmp/etf_flows_new.json data/etf_flows.json || true
+          [ -f /tmp/cot_data_new.json  ] && cp /tmp/cot_data_new.json  data/cot_data.json  || true
+          # Stage only files that actually exist
+          git add $(ls data/etf_flows.json data/cot_data.json 2>/dev/null) 2>/dev/null || true
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
