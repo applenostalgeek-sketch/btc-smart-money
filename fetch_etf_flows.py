@@ -199,7 +199,10 @@ def _parse_farside_html(html):
                 if etf_vals:
                     entry['total'] = round(sum(etf_vals), 1)
 
-            if 'total' in entry or 'ibit' in entry:
+            # Ignorer les entrées vides (Farside pas encore publié pour ce jour)
+            total_val = entry.get('total', 0) or 0
+            has_etf = any(entry.get(k) for k in list(ETF_COLUMNS.values()) if k != 'total')
+            if (total_val != 0 or has_etf):
                 results.append(entry)
 
         results.sort(key=lambda x: x['date'])
@@ -611,6 +614,10 @@ def main():
     if not merged:
         print('\n❌ FAILURE: No data to save.')
         sys.exit(1)
+
+    # Remove phantom entries: total=0 and no individual ETF data present
+    etf_keys = list(ETF_COLUMNS.values())
+    merged = [e for e in merged if e.get('total', 0) != 0 or any(e.get(k) for k in etf_keys)]
 
     # Keep last 90 days for output history
     history_90 = merged[-90:]
