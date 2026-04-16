@@ -1,277 +1,97 @@
 {
-  "last_updated": "2026-04-16 12:39 UTC",
+  "last_updated": "2026-04-16 14:18 UTC",
   "source": "CoinGecko Public API \u2014 /api/v3/companies/public_treasury/bitcoin",
-  "total_companies": 45,
+  "total_companies": 15,
   "companies": [
     {
       "name": "MicroStrategy",
       "ticker": "MSTR",
       "btc": 780897,
-      "usd_value": 58342832143
+      "usd_value": 57677208790
     },
     {
       "name": "XXI",
       "ticker": "XXI",
       "btc": 43514,
-      "usd_value": 3251043349
+      "usd_value": 3213952753
     },
     {
       "name": "Metaplanet",
       "ticker": "3350",
       "btc": 40177,
-      "usd_value": 3001727458
+      "usd_value": 2967481265
     },
     {
       "name": "Marathon",
       "ticker": "MARA",
       "btc": 38689,
-      "usd_value": 2890555134
+      "usd_value": 2857577287
     },
     {
       "name": "Bitcoin Standard Treasury Company",
       "ticker": "CEPO",
       "btc": 30021,
-      "usd_value": 2242946463
+      "usd_value": 2217357072
     },
     {
       "name": "Galaxy Digital Holdings Ltd",
       "ticker": "GLXY",
       "btc": 25723,
-      "usd_value": 1921831780
+      "usd_value": 1899905931
     },
     {
       "name": "Bullish",
       "ticker": "BLSH",
       "btc": 23300,
-      "usd_value": 1740803190
+      "usd_value": 1720942666
     },
     {
       "name": "Riot",
       "ticker": "RIOT",
       "btc": 15680,
-      "usd_value": 1171493306
+      "usd_value": 1158127940
     },
     {
       "name": "Coinbase",
       "ticker": "COIN",
       "btc": 15389,
-      "usd_value": 1149751944
+      "usd_value": 1136634622
     },
     {
       "name": "Strive",
       "ticker": "ASST",
       "btc": 13741,
-      "usd_value": 1026618136
+      "usd_value": 1014905626
     },
     {
       "name": "Hut 8 Mining Corp",
       "ticker": "HUT",
       "btc": 13696,
-      "usd_value": 1023263541
+      "usd_value": 1011589303
     },
     {
       "name": "CleanSpark",
       "ticker": "CLSK",
       "btc": 13363,
-      "usd_value": 998384250
+      "usd_value": 986993856
     },
     {
       "name": "Tesla",
       "ticker": "TSLA",
       "btc": 11509,
-      "usd_value": 859867121
+      "usd_value": 850057045
     },
     {
       "name": "Trump Media & Technology Group Corp.",
       "ticker": "DJT",
       "btc": 9542,
-      "usd_value": 712919424
+      "usd_value": 704785848
     },
     {
       "name": "Block",
       "ticker": "XYZ",
       "btc": 8883,
-      "usd_value": 663671877
-    },
-    {
-      "name": "GD Culture Group",
-      "ticker": "GDC",
-      "btc": 7500,
-      "usd_value": 560344375
-    },
-    {
-      "name": "American Bitcoin",
-      "ticker": "ABTC",
-      "btc": 6235,
-      "usd_value": 465832957
-    },
-    {
-      "name": "Next Technology Holding",
-      "ticker": "NXTT",
-      "btc": 5833,
-      "usd_value": 435798498
-    },
-    {
-      "name": "ProCap BTC",
-      "ticker": "BRR",
-      "btc": 5457,
-      "usd_value": 407706567
-    },
-    {
-      "name": "Nakamoto Inc (formerly KindlyMD)",
-      "ticker": "NAKA",
-      "btc": 5058,
-      "usd_value": 377896246
-    },
-    {
-      "name": "Gemini Space Station",
-      "ticker": "GEMI",
-      "btc": 4827,
-      "usd_value": 360637639
-    },
-    {
-      "name": "Boyaa Interactive International Limited",
-      "ticker": "434",
-      "btc": 4091,
-      "usd_value": 305649178
-    },
-    {
-      "name": "OranjeBTC",
-      "ticker": "OBTC3",
-      "btc": 3722,
-      "usd_value": 278102649
-    },
-    {
-      "name": "Bitcoin Group SE",
-      "ticker": "ADE",
-      "btc": 3605,
-      "usd_value": 269338863
-    },
-    {
-      "name": "Empery Digital",
-      "ticker": "EMPD",
-      "btc": 2989,
-      "usd_value": 223315911
-    },
-    {
-      "name": "Capital B",
-      "ticker": "ALCPB",
-      "btc": 2888,
-      "usd_value": 215769941
-    },
-    {
-      "name": "The Smarter Web Company PLC",
-      "ticker": "SWC",
-      "btc": 2695,
-      "usd_value": 201350412
-    },
-    {
-      "name": "DeFi Technologies",
-      "ticker": "DEFI",
-      "btc": 2597,
-      "usd_value": 194025314
-    },
-    {
-      "name": "DDC Enterprise Limited",
-      "ticker": "DDC",
-      "btc": 2383,
-      "usd_value": 178040086
-    },
-    {
-      "name": "Microcloud Hologram",
-      "ticker": "HOLO",
-      "btc": 2353,
-      "usd_value": 175798708
-    },
-    {
-      "name": "Sequans Communications S.A.",
-      "ticker": "SQNS",
-      "btc": 2014,
-      "usd_value": 150471143
-    },
-    {
-      "name": "BITFUFU",
-      "ticker": "FUFU",
-      "btc": 1830,
-      "usd_value": 136724027
-    },
-    {
-      "name": "Keel Infrastructure (formerly Bitfarms)",
-      "ticker": "KEEL",
-      "btc": 1827,
-      "usd_value": 136499890
-    },
-    {
-      "name": "Canaan",
-      "ticker": "CAN",
-      "btc": 1793,
-      "usd_value": 133959662
-    },
-    {
-      "name": "NEXON Co., Ltd.",
-      "ticker": "3659",
-      "btc": 1717,
-      "usd_value": 128281505
-    },
-    {
-      "name": "Cipher Mining",
-      "ticker": "CIFR",
-      "btc": 1500,
-      "usd_value": 112068875
-    },
-    {
-      "name": "Anap Holdings",
-      "ticker": "3189",
-      "btc": 1417,
-      "usd_value": 105870278
-    },
-    {
-      "name": "Remixpoint",
-      "ticker": "3825",
-      "btc": 1411,
-      "usd_value": 105441743
-    },
-    {
-      "name": "Treasury",
-      "ticker": "NEDSE",
-      "btc": 1111,
-      "usd_value": 83005680
-    },
-    {
-      "name": "KULR Technology Group",
-      "ticker": "KULR",
-      "btc": 1057,
-      "usd_value": 78948040
-    },
-    {
-      "name": "H100 Group",
-      "ticker": "GS9",
-      "btc": 1051,
-      "usd_value": 78526661
-    },
-    {
-      "name": "ZOOZ",
-      "ticker": "ZOOZ",
-      "btc": 1036,
-      "usd_value": 77402236
-    },
-    {
-      "name": "Cango",
-      "ticker": "CANG",
-      "btc": 1026,
-      "usd_value": 76631950
-    },
-    {
-      "name": "Nano Labs",
-      "ticker": "NA",
-      "btc": 1000,
-      "usd_value": 74712583
-    },
-    {
-      "name": "USBC",
-      "ticker": "USBC",
-      "btc": 1000,
-      "usd_value": 74712583
+      "usd_value": 656100159
     }
   ]
 }
