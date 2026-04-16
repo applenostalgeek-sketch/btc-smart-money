@@ -89,8 +89,9 @@ def fetch_treasury():
         print(f'\n❌ FAILURE: No companies with >= {MIN_BTC} BTC found')
         sys.exit(1)
 
-    # Sort by BTC holdings descending
+    # Sort by BTC holdings descending — garder top 15 pour le JSON
     companies.sort(key=lambda c: c['btc'], reverse=True)
+    companies = companies[:15]
 
     output = {
         'last_updated': datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC'),

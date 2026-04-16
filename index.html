@@ -219,30 +219,29 @@ window.addEventListener('resize', () => {
 
 // ── Treasury Companies — Corporate BTC holders ───────────────
 // Colors chosen to be visually distinct from the blue/green ETF fish palette
-const TREASURY_COMPANIES = [
-    { name: 'MicroStrategy', bodyCol: '#f59e0b', finCol: '#d97706' }, // amber
-    { name: 'Marathon',      bodyCol: '#10b981', finCol: '#059669' }, // emerald
-    { name: 'Riot',          bodyCol: '#ef4444', finCol: '#dc2626' }, // red
-    { name: 'Metaplanet',    bodyCol: '#ec4899', finCol: '#db2777' }, // pink
-    { name: 'Tesla',         bodyCol: '#e2e8f0', finCol: '#94a3b8' }, // white/silver
-    { name: 'Coinbase',      bodyCol: '#60a5fa', finCol: '#3b82f6' }, // light blue (distinct from BlackRock dark blue)
-    { name: 'Block',         bodyCol: '#a78bfa', finCol: '#7c3aed' }, // violet
-    { name: 'Galaxy Digital Holdings Ltd', bodyCol: '#34d399', finCol: '#10b981' }, // teal
-    { name: 'Bullish',       bodyCol: '#fb923c', finCol: '#ea580c' }, // orange
-    { name: 'Marathon',      bodyCol: '#10b981', finCol: '#059669' }, // (fallback duplicate)
-    { name: 'XXI',           bodyCol: '#c084fc', finCol: '#a855f7' }, // purple
-    { name: 'Strive',        bodyCol: '#f472b6', finCol: '#ec4899' }, // hot pink
-    { name: 'Hut 8 Mining Corp', bodyCol: '#4ade80', finCol: '#22c55e' }, // green
-    { name: 'CleanSpark',    bodyCol: '#38bdf8', finCol: '#0ea5e9' }, // sky blue
-    { name: 'Bitcoin Standard Treasury Company', bodyCol: '#fbbf24', finCol: '#f59e0b' }, // yellow
+// Palette fixe pour les plus connus, auto-générée pour les autres
+const TREASURY_PALETTE = [
+    { name: 'MicroStrategy',     bodyCol: '#f59e0b', finCol: '#d97706' },
+    { name: 'XXI',               bodyCol: '#c084fc', finCol: '#a855f7' },
+    { name: 'Metaplanet',        bodyCol: '#ec4899', finCol: '#db2777' },
+    { name: 'Marathon',          bodyCol: '#10b981', finCol: '#059669' },
+    { name: 'Riot',              bodyCol: '#ef4444', finCol: '#dc2626' },
+    { name: 'Coinbase',          bodyCol: '#60a5fa', finCol: '#3b82f6' },
+    { name: 'Bullish',           bodyCol: '#fb923c', finCol: '#ea580c' },
+    { name: 'Galaxy Digital Holdings Ltd', bodyCol: '#34d399', finCol: '#10b981' },
+    { name: 'Strive',            bodyCol: '#f472b6', finCol: '#ec4899' },
+    { name: 'Tesla',             bodyCol: '#e2e8f0', finCol: '#94a3b8' },
+    { name: 'Block',             bodyCol: '#a78bfa', finCol: '#7c3aed' },
+    { name: 'Hut 8 Mining Corp', bodyCol: '#4ade80', finCol: '#22c55e' },
 ];
-
-// Look up color config for a treasury company by name
+// Couleurs auto pour toute nouvelle entrée (hash du nom)
+const AUTO_COLORS = ['#38bdf8','#fb7185','#a3e635','#fbbf24','#c084fc','#34d399','#f472b6','#60a5fa'];
 function getTreasuryStyle(name) {
-    const match = TREASURY_COMPANIES.find(t => t.name === name);
+    const match = TREASURY_PALETTE.find(t => t.name === name);
     if (match) return match;
-    // Generic fallback for companies not in the list
-    return { name, bodyCol: '#94a3b8', finCol: '#64748b' };
+    let h = 0; for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+    const col = AUTO_COLORS[h % AUTO_COLORS.length];
+    return { name, bodyCol: col, finCol: col };
 }
 
 // ── Fish — Named Institutional Fish ──────────────────────────
@@ -294,17 +293,17 @@ const LOG_BTC_MIN = Math.log10(1000);   // minimum threshold
 function setTreasuryFish(companies) {
     treasuryFishArr.length = 0;
     if (!companies || companies.length === 0) return;
-
-    companies.forEach(company => {
+    // Top 8 dynamiques (déjà triés par BTC desc depuis CoinGecko)
+    const top8 = companies.slice(0, 8);
+    top8.forEach(company => {
         if (company.btc < 1000) return;
         const style = getTreasuryStyle(company.name);
         const logBtc = Math.log10(Math.max(company.btc, 1000));
         let size = 14 + ((logBtc - LOG_BTC_MIN) / (LOG_BTC_MAX - LOG_BTC_MIN)) * 36;
         size = Math.max(14, Math.min(50, size));
         if (isMobile()) size = size * 0.6;
-        // Treasury fish always swim RIGHT (HODLers never sell)
-        const fish = new TreasuryFish(company, style, size);
-        treasuryFishArr.push(fish);
+        // Treasury fish nagent toujours à droite (HODLeurs)
+        treasuryFishArr.push(new TreasuryFish(company, style, size));
     });
 }
 
