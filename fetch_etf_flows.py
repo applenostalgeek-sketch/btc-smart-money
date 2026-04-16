@@ -1,25 +1,25 @@
 """
 fetch_etf_flows.py — Bitcoin ETF daily flows
-Source: iShares API (IBIT shares outstanding by date) — no Cloudflare, works from GitHub Actions
+Sources (in priority order):
+  1. Cloudflare Worker proxy → Farside Investors (per-ETF breakdown: IBIT, FBTC, ARKB, GBTC, etc.)
+  2. Direct Farside URL (fallback if Worker fails)
+  3. iShares API (IBIT shares outstanding by date) — no Cloudflare, works from GitHub Actions
 Methodology:
-  - Fetches daily IBIT shares outstanding from BlackRock/iShares date-based CSV API
+  - Tries Farside via Worker first; parses HTML table for per-ETF daily flows
+  - Falls back to iShares IBIT shares × price if Farside is unreachable
   - IBIT settlement is T+1: shares change on date D corresponds to trade flow on date D-1
   - IBIT flow = Δshares × closing price (from yfinance)
   - Total flow estimated from IBIT using current AUM weights (IBIT ≈ 60% of total BTC ETF AUM)
-  - Historical data (before current run) merged from existing etf_flows.json (Farside base)
+  - Historical data (before current run) merged from existing etf_flows.json
   - Exits with code 1 on total failure → GitHub Actions marks job failed
 
-Limitations:
-  - Total flow is an estimate; IBIT flows are exact
-  - Apr 14 and Apr 15 flows only available the following day (T+1 settlement lag)
-  - IBIT/total ratio varies daily; estimate uses AUM-weighted median over last 30 days
-
-Validated: computed IBIT flows match Farside IBIT column within 2-5%
+Validated: Farside per-ETF data is exact; iShares IBIT computed flows match within 2-5%
 """
 
 import sys
 import json
 import os
+import re
 from datetime import datetime, date, timedelta
 
 os.makedirs('data', exist_ok=True)
@@ -27,6 +27,12 @@ os.makedirs('data', exist_ok=True)
 # ──────────────────────────────────────────────
 # Configuration
 # ──────────────────────────────────────────────
+
+# Cloudflare Worker proxy (primary) — bypasses Farside's Cloudflare protection
+WORKER_URL = 'https://farside-proxy.applenostalgeek.workers.dev'
+
+# Direct Farside URL (fallback)
+FARSIDE_URL = 'https://farside.co.uk/bitcoin-etf-flow-all-data/'
 
 # iShares IBIT product endpoint (date-based CSV)
 ISHARES_URL = (
@@ -51,6 +57,192 @@ LOOKBACK_DAYS = 110  # ~75 trading days
 
 # Existing JSON path
 JSON_PATH = 'data/etf_flows.json'
+
+# ETF column mapping: Farside header text → JSON key
+ETF_COLUMNS = {
+    'IBIT':  'ibit',
+    'FBTC':  'fbtc',
+    'BITB':  'bitb',
+    'ARKB':  'arkb',
+    'BTCO':  'btco',
+    'EZBC':  'ezbc',
+    'BRRR':  'brrr',
+    'HODL':  'hodl',
+    'GBTC':  'gbtc',
+    'BTC':   'btc',
+    'BTCW':  'btcw',
+    'MSBT':  'msbt',
+}
+
+
+# ──────────────────────────────────────────────
+# Step 0: Scrape Farside via Cloudflare Worker
+# ──────────────────────────────────────────────
+
+def _parse_farside_html(html):
+    """
+    Parse Farside ETF flow HTML table.
+    Returns list of dicts: [{date, ibit, fbtc, arkb, gbtc, bitb, total, ...}, ...]
+    sorted ascending by date. Only includes rows with a parseable date.
+    """
+    try:
+        from html.parser import HTMLParser
+
+        class TableParser(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.in_table = False
+                self.in_tr = False
+                self.in_td = False
+                self.current_row = []
+                self.current_cell = ''
+                self.headers = []
+                self.rows = []
+                self.header_done = False
+
+            def handle_starttag(self, tag, attrs):
+                attrs_d = dict(attrs)
+                if tag == 'table':
+                    self.in_table = True
+                if self.in_table and tag == 'tr':
+                    self.in_tr = True
+                    self.current_row = []
+                if self.in_tr and tag in ('td', 'th'):
+                    self.in_td = True
+                    self.current_cell = ''
+
+            def handle_endtag(self, tag):
+                if tag == 'table':
+                    self.in_table = False
+                if self.in_table and tag == 'tr':
+                    self.in_tr = False
+                    if not self.header_done and self.current_row:
+                        # Check if this looks like a header row
+                        upper = [c.strip().upper() for c in self.current_row]
+                        if 'IBIT' in upper or 'FBTC' in upper:
+                            self.headers = [c.strip() for c in self.current_row]
+                            self.header_done = True
+                    elif self.header_done and self.current_row:
+                        self.rows.append(list(self.current_row))
+                if self.in_table and tag in ('td', 'th'):
+                    self.in_td = False
+                    self.current_row.append(self.current_cell.strip())
+
+            def handle_data(self, data):
+                if self.in_td:
+                    self.current_cell += data
+
+        parser = TableParser()
+        parser.feed(html)
+
+        if not parser.headers or not parser.rows:
+            print('  [Farside] Could not find table headers or rows')
+            return []
+
+        print(f'  [Farside] Headers: {parser.headers[:12]}')
+        print(f'  [Farside] Row count: {len(parser.rows)}')
+
+        # Map header positions
+        col_idx = {}
+        for i, h in enumerate(parser.headers):
+            hu = h.strip().upper()
+            if hu in ETF_COLUMNS:
+                col_idx[ETF_COLUMNS[hu]] = i
+            elif hu in ('DATE',):
+                col_idx['date'] = i
+            elif hu == 'TOTAL':
+                col_idx['total'] = i
+
+        if 'date' not in col_idx:
+            # Assume first column is date
+            col_idx['date'] = 0
+
+        print(f'  [Farside] Column map: {col_idx}')
+
+        def parse_val(s):
+            s = s.strip().replace(',', '').replace('(', '-').replace(')', '')
+            if s in ('', '-', '—', 'N/A', 'n/a'):
+                return None
+            try:
+                return round(float(s), 1)
+            except ValueError:
+                return None
+
+        results = []
+        for row in parser.rows:
+            if not row or len(row) <= col_idx.get('date', 0):
+                continue
+            raw_date = row[col_idx['date']].strip()
+            # Parse date — Farside uses formats like "10 Jan 2024"
+            dt = None
+            for fmt in ('%d %b %Y', '%d %B %Y', '%Y-%m-%d', '%m/%d/%Y'):
+                try:
+                    dt = datetime.strptime(raw_date, fmt).date().isoformat()
+                    break
+                except ValueError:
+                    continue
+            if not dt:
+                continue  # skip non-date rows (totals, headers, etc.)
+
+            entry = {'date': dt}
+            for key, idx in col_idx.items():
+                if key == 'date':
+                    continue
+                if idx < len(row):
+                    v = parse_val(row[idx])
+                    if v is not None:
+                        entry[key] = v
+
+            # Compute total if missing but ETF columns present
+            if 'total' not in entry:
+                etf_vals = [entry.get(k) for k in ETF_COLUMNS.values() if entry.get(k) is not None]
+                if etf_vals:
+                    entry['total'] = round(sum(etf_vals), 1)
+
+            if 'total' in entry or 'ibit' in entry:
+                results.append(entry)
+
+        results.sort(key=lambda x: x['date'])
+        print(f'  [Farside] Parsed {len(results)} dated rows'
+              + (f', latest: {results[-1]["date"]}' if results else ''))
+        return results
+
+    except Exception as e:
+        print(f'  [Farside] Parse error: {e}')
+        import traceback; traceback.print_exc()
+        return []
+
+
+def scrape_farside():
+    """
+    Fetch Farside HTML via Worker (primary) or direct URL (fallback).
+    Returns list of flow dicts or empty list on failure.
+    """
+    import requests
+
+    for label, url in [('Worker', WORKER_URL), ('Direct', FARSIDE_URL)]:
+        try:
+            print(f'[0] Fetching Farside via {label}: {url}')
+            r = requests.get(url, headers=BROWSER_HEADERS, timeout=25)
+            if r.status_code != 200:
+                print(f'  {label} HTTP {r.status_code} — skipping')
+                continue
+            html = r.text
+            # Detect Cloudflare challenge page
+            if 'Just a moment' in html or 'cf-browser-verification' in html or 'Checking if' in html:
+                print(f'  {label} returned Cloudflare challenge page — skipping')
+                continue
+            rows = _parse_farside_html(html)
+            if len(rows) >= 10:
+                print(f'[0] Farside OK via {label}: {len(rows)} rows')
+                return rows
+            else:
+                print(f'  {label} returned only {len(rows)} rows — skipping')
+        except Exception as e:
+            print(f'  {label} error: {e}')
+
+    print('[0] Farside unavailable (both Worker and direct failed)')
+    return []
 
 
 # ──────────────────────────────────────────────
@@ -357,32 +549,65 @@ def compute_stats(rows):
 # ──────────────────────────────────────────────
 
 def main():
-    print('=== fetch_etf_flows.py — Bitcoin ETF Flows (iShares IBIT API) ===\n')
+    print('=== fetch_etf_flows.py — Bitcoin ETF Flows ===\n')
 
-    # Fetch data
-    shares = fetch_ibit_shares()
-    if len(shares) < 5:
-        print('\n❌ FAILURE: Could not retrieve IBIT shares from iShares API.')
-        print('   Check: https://www.ishares.com/us/products/333011/')
-        sys.exit(1)
+    # ── Try Farside first (via Cloudflare Worker) ──────────────
+    farside_rows = scrape_farside()
+    farside_ok = len(farside_rows) >= 10
 
-    prices = fetch_ibit_prices()
-    if len(prices) < 5:
-        # Try fetching with yfinance already tried, but fall back to shares-only
-        print('  WARNING: few prices from yfinance, estimates may be inaccurate')
+    if farside_ok:
+        print(f'\n[Farside path] Got {len(farside_rows)} rows from Farside')
 
-    # Compute flows
-    ibit_flows = compute_ibit_flows(shares, prices)
-    if not ibit_flows:
-        print('\n❌ FAILURE: Could not compute any IBIT flows.')
-        sys.exit(1)
+        # Load existing history to merge
+        existing = load_existing_history()
+        by_date = {e['date']: e for e in existing}
 
-    # Load existing + compute ratio
-    existing = load_existing_history()
-    ibit_ratio = compute_aum_ratio(existing, ibit_flows)
+        # Farside data is authoritative — overwrite existing entries
+        for row in farside_rows:
+            by_date[row['date']] = row
 
-    # Build merged history
-    merged = build_merged_history(existing, ibit_flows, ibit_ratio)
+        merged = sorted(by_date.values(), key=lambda x: x['date'])
+        print(f'[Farside path] Merged history: {len(merged)} total entries')
+
+        # Also try to extend with iShares for the most recent days not yet on Farside
+        farside_last = farside_rows[-1]['date'] if farside_rows else '1970-01-01'
+        today_str = date.today().isoformat()
+        days_gap = (date.fromisoformat(today_str) - date.fromisoformat(farside_last)).days
+
+        if days_gap >= 2:
+            print(f'[Farside path] Farside is {days_gap}d behind, extending with iShares...')
+            shares = fetch_ibit_shares(lookback_days=30)
+            prices = fetch_ibit_prices()
+            if len(shares) >= 3:
+                ibit_flows = compute_ibit_flows(shares, prices)
+                ibit_ratio = compute_aum_ratio(merged, ibit_flows)
+                merged = build_merged_history(merged, ibit_flows, ibit_ratio)
+
+        source = 'Farside Investors (via Cloudflare Worker proxy) + iShares extension'
+
+    else:
+        # ── Farside unavailable — fall back to iShares only ────
+        print('\n[iShares fallback path]')
+        shares = fetch_ibit_shares()
+        if len(shares) < 5:
+            print('\n❌ FAILURE: Could not retrieve IBIT shares from iShares API.')
+            print('   Check: https://www.ishares.com/us/products/333011/')
+            sys.exit(1)
+
+        prices = fetch_ibit_prices()
+        if len(prices) < 5:
+            print('  WARNING: few prices from yfinance, estimates may be inaccurate')
+
+        ibit_flows = compute_ibit_flows(shares, prices)
+        if not ibit_flows:
+            print('\n❌ FAILURE: Could not compute any IBIT flows.')
+            sys.exit(1)
+
+        existing = load_existing_history()
+        ibit_ratio = compute_aum_ratio(existing, ibit_flows)
+        merged = build_merged_history(existing, ibit_flows, ibit_ratio)
+        source = 'iShares IBIT API (shares × price, T+1 settlement) + AUM-weighted total estimate'
+
     if not merged:
         print('\n❌ FAILURE: No data to save.')
         sys.exit(1)
@@ -398,19 +623,12 @@ def main():
     days_stale = (date.fromisoformat(today) - date.fromisoformat(last_date)).days
     if days_stale > 7:
         print(f'\n⚠️  WARNING: latest data is {days_stale} days old ({last_date})')
-        print('   iShares API may not have data for recent trading days yet.')
-        # Still proceed (not a hard failure if we at least have recent data)
         if days_stale > 14:
             print('\n❌ FAILURE: Data too stale (> 14 days). Something is wrong.')
             sys.exit(1)
 
-    # Determine source description
+    # Determine if latest is estimated
     is_estimated = latest.get('_estimated', False)
-    source = (
-        'iShares IBIT API (shares × price, T+1 settlement) + AUM-weighted total estimate'
-        if is_estimated else
-        'Farside Investors (via existing historical data) + iShares IBIT API extension'
-    )
 
     output = {
         'last_updated': datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC'),
@@ -430,12 +648,17 @@ def main():
         json.dump(output, f, indent=2)
 
     print(f'\n✅ Saved {JSON_PATH}')
+    print(f'   Source  : {"Farside" if farside_ok else "iShares (fallback)"}')
     print(f'   Signal  : {stats["signal"]}')
     print(f'   Flux 7j : {stats["net_7d"]:+.0f}M$')
     print(f'   Flux 30j: {stats["net_30d"]:+.0f}M$')
     print(f'   Streak  : {stats["streak"]} days {stats["direction"]}')
-    print(f'   Latest  : {latest["date"]} — IBIT {latest.get("ibit", "N/A")}M$, '
-          f'total {latest.get("total", "N/A")}M$ {"(estimated)" if is_estimated else "(Farside)"}')
+    print(f'   Latest  : {latest["date"]} — '
+          f'IBIT {latest.get("ibit", "N/A")}M$, '
+          f'FBTC {latest.get("fbtc", "N/A")}M$, '
+          f'GBTC {latest.get("gbtc", "N/A")}M$, '
+          f'total {latest.get("total", "N/A")}M$'
+          + (' (estimated)' if is_estimated else ' (Farside)'))
     print(f'   History : {history_90[0]["date"]} → {history_90[-1]["date"]} ({len(history_90)} days)')
     print(f'   Updated : {output["last_updated"]}')
 

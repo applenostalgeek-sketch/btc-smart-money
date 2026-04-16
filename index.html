@@ -149,7 +149,7 @@
 <div id="legend">
     <div class="legend-item">
         <div class="legend-dot" style="background:rgba(56,189,248,0.85)"></div>
-        🐟 Poissons = institutions (ETF)
+        🐟 Poissons = ETF (taille = flux du jour)
     </div>
     <div class="legend-item">
         <div class="legend-dot" style="background:rgba(150,150,255,0.5)"></div>
@@ -212,21 +212,50 @@ window.addEventListener('resize', () => {
     fishArr.forEach(f => f.clampY());
 });
 
-// ── Fish ─────────────────────────────────────────────────────
-let FISH_COUNT = 14; // dynamique selon ETF flows, 14 = neutre par défaut
-const fishArr  = [];
+// ── Fish — Named Institutional Fish ──────────────────────────
+const INSTITUTIONS = [
+    { key: 'ibit',  name: 'BlackRock',  bodyCol: '#1a56db', finCol: '#1e429f' },
+    { key: 'fbtc',  name: 'Fidelity',   bodyCol: '#057a55', finCol: '#03543f' },
+    { key: 'arkb',  name: 'ARK',        bodyCol: '#ff5a1f', finCol: '#c2410c' },
+    { key: 'gbtc',  name: 'Grayscale',  bodyCol: '#7e3af2', finCol: '#6c2bd9' },
+    { key: 'bitb',  name: 'Bitwise',    bodyCol: '#e3a008', finCol: '#c27803' },
+    { key: 'hodl',  name: 'VanEck',     bodyCol: '#e02424', finCol: '#9b1c1c' },
+    { key: 'brrr',  name: 'Valkyrie',   bodyCol: '#0694a2', finCol: '#036672' },
+    { key: 'btco',  name: 'Invesco',    bodyCol: '#31c48d', finCol: '#0e9f6e' },
+];
 
-function setFishCount(etfNet7) {
-    const activity = Math.min(650, Math.abs(etfNet7));
-    let target     = Math.round(5 + (activity / 650) * 21);
-    if (isMobile()) target = Math.round(target * 0.45); // moitié moins sur mobile
-    while (fishArr.length < target) fishArr.push(new Fish());
-    if (fishArr.length > target) fishArr.splice(target);
-    FISH_COUNT = target;
+const fishArr = [];
+
+function setInstitutionFish(latestEtf) {
+    fishArr.length = 0;
+    if (!latestEtf) {
+        // Fallback: generic fish
+        for (let i = 0; i < 8; i++) fishArr.push(new Fish(null));
+        return;
+    }
+    const flows = INSTITUTIONS.map(inst => ({
+        ...inst,
+        flow: latestEtf[inst.key] || 0
+    })).filter(i => Math.abs(i.flow) > 1);
+
+    if (flows.length === 0) {
+        for (let i = 0; i < 4; i++) fishArr.push(new Fish(null));
+        return;
+    }
+
+    const maxFlow = Math.max(...flows.map(i => Math.abs(i.flow)), 1);
+    flows.forEach(inst => {
+        let size = 12 + (Math.abs(inst.flow) / maxFlow) * 33;
+        if (isMobile()) size = size * 0.6;
+        fishArr.push(new Fish(inst, size));
+    });
 }
 
 class Fish {
-    constructor() {
+    constructor(inst, forcedSize) {
+        this.inst      = inst;
+        this.name      = inst?.name || '';
+        this.instFlow  = inst?.flow || 0;
         this.depth     = 0.25 + Math.random() * 0.75;
         this.x         = Math.random() * (canvas.width  || 1200);
         this.baseY     = 70 + Math.random() * ((canvas.height || 700) - 140);
@@ -234,20 +263,22 @@ class Fish {
         this.yDrift    = (Math.random() - 0.5) * 0.18;
         this.tailPhase = Math.random() * Math.PI * 2;
         this.tailSpeed = 0.055 + Math.random() * 0.04;
-        this.size      = 10 + this.depth * 20;
-        this.speed     = 0.28 + this.depth * 0.55;
-        this.opacity   = 0.3 + this.depth * 0.65;
+        this.size      = forcedSize || (10 + this.depth * 20);
+        this.speed     = 0.18 + (this.size / 45) * 0.5;
+        this.opacity   = 0.55 + this.depth * 0.4;
+        this.bodyCol   = inst?.bodyCol || '#86efac';
+        this.finCol    = inst?.finCol  || '#15803d';
     }
     clampY() {
         const h = canvas.height || 700;
         this.baseY = Math.max(70, Math.min(this.baseY, h - 70));
     }
     getDir() {
-        // Poissons = smart money : droite si institutions achètent, gauche si vendent
-        if (lastEtfNet7 === null) return 1; // défaut : droite
-        if (lastEtfNet7 > 50)  return 1;   // achètent → droite (haussier)
-        if (lastEtfNet7 < -50) return -1;  // vendent → gauche (baissier)
-        return Math.sin(this.tailPhase * 0.3 + this.depth * 5) > 0 ? 1 : -1; // neutre → aléatoire
+        if (this.inst) return this.instFlow >= 0 ? 1 : -1;
+        if (lastEtfNet7 === null) return 1;
+        if (lastEtfNet7 > 50)  return 1;
+        if (lastEtfNet7 < -50) return -1;
+        return Math.sin(this.tailPhase * 0.3 + this.depth * 5) > 0 ? 1 : -1;
     }
     update() {
         const dir = this.getDir();
@@ -263,11 +294,8 @@ class Fish {
         const dir = this.getDir();
         const x = this.x, y = this.baseY + this.yOffset;
         const s = this.size, t = this.tailPhase;
-        let bodyCol, finCol;
-        const net = lastEtfNet7 ?? 0;
-        if (net > 100)       { bodyCol = '#4ade80'; finCol = '#15803d'; }  // achètent → vert
-        else if (net < -100) { bodyCol = '#f87171'; finCol = '#b91c1c'; }  // vendent → rouge
-        else                  { bodyCol = '#94a3b8'; finCol = '#475569'; } // neutre → gris
+        const bodyCol = this.bodyCol;
+        const finCol  = this.finCol;
 
         ctx.save();
         ctx.translate(x, y);
@@ -311,10 +339,21 @@ class Fish {
         ctx.beginPath(); ctx.arc(s * 0.47, -s * 0.09, s * 0.05, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.fill();
 
+        // Institution name label
+        if (this.name) {
+            ctx.save();
+            ctx.globalAlpha = this.opacity * 0.75;
+            ctx.font = `${Math.max(9, s * 0.55)}px -apple-system, sans-serif`;
+            ctx.fillStyle = '#e2e8f0';
+            ctx.textAlign = 'center';
+            ctx.fillText(this.name, 0, -s * 0.75);
+            ctx.restore();
+        }
+
         ctx.restore();
     }
 }
-for (let i = 0; i < FISH_COUNT; i++) fishArr.push(new Fish());
+setInstitutionFish(null); // spawn generic fish until data loads
 
 // ── Bubbles ─────────────────────────────────────────────────
 const bubbles = Array.from({length: 55}, () => ({
@@ -640,7 +679,8 @@ function updateOverlay(perps, btc, cotRaw, etf) {
     lastPerps   = perps;
     lastEtfNet7 = etf?.net_7d ?? null;
     if (btc.usd > 0) btcNeonText = '$' + Math.round(btc.usd).toLocaleString('en-US');
-    if (lastEtfNet7 !== null) setFishCount(lastEtfNet7);
+    setInstitutionFish(etf?.latest || null);
+    lastEtfNet7 = etf?.net_7d ?? null; // keep for current direction fallback
 
     // Timestamp bas-droite — date de la donnée ETF (ce que l'utilisateur veut savoir)
     const dataDate = etf?.latest?.date || null;
