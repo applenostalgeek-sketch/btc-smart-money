@@ -339,14 +339,15 @@ class Fish {
         ctx.beginPath(); ctx.arc(s * 0.47, -s * 0.09, s * 0.05, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.fill();
 
-        // Institution name label
+        // Institution name label — annuler le flip quand le poisson nage à gauche
         if (this.name) {
             ctx.save();
+            if (dir < 0) ctx.scale(-1, 1); // remet le texte dans le bon sens
             ctx.globalAlpha = this.opacity * 0.75;
             ctx.font = `${Math.max(9, s * 0.55)}px -apple-system, sans-serif`;
             ctx.fillStyle = '#e2e8f0';
             ctx.textAlign = 'center';
-            ctx.fillText(this.name, 0, -s * 0.75);
+            ctx.fillText(this.name, 0, -s * 0.9);
             ctx.restore();
         }
 
