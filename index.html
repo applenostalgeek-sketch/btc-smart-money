@@ -680,7 +680,18 @@ function updateOverlay(perps, btc, cotRaw, etf) {
     lastPerps   = perps;
     lastEtfNet7 = etf?.net_7d ?? null;
     if (btc.usd > 0) btcNeonText = '$' + Math.round(btc.usd).toLocaleString('en-US');
-    setInstitutionFish(etf?.latest || null);
+    // Calculer les flux 7j par institution depuis l'historique
+    const etf7d = etf?.history ? (() => {
+        const last7 = etf.history.slice(-7);
+        const sums = {};
+        last7.forEach(day => {
+            INSTITUTIONS.forEach(inst => {
+                sums[inst.key] = (sums[inst.key] || 0) + (day[inst.key] || 0);
+            });
+        });
+        return sums;
+    })() : etf?.latest || null;
+    setInstitutionFish(etf7d);
     lastEtfNet7 = etf?.net_7d ?? null; // keep for current direction fallback
 
     // Timestamp bas-droite — date de la donnée ETF (ce que l'utilisateur veut savoir)
