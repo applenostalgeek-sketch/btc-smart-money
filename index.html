@@ -527,6 +527,28 @@ function drawOcean() {
     ctx.restore();
 }
 
+// ── Squeeze alert overlay ─────────────────────────────────────
+let squeezeSignal = null; // 'short' | 'long' | null
+
+function drawSqueezeAlert() {
+    if (!squeezeSignal) return;
+    const w = canvas.width, h = canvas.height;
+    const isShort = squeezeSignal === 'short';
+    const label = isShort ? 'SHORT SQUEEZE ↑' : 'LONG SQUEEZE ↓';
+    const col   = isShort ? '#4ade80' : '#f87171';
+    const pulse = 0.55 + 0.2 * Math.sin(time * 2.2);
+    ctx.save();
+    ctx.globalAlpha = pulse;
+    ctx.font = `bold ${Math.round(Math.min(w, h) * 0.055)}px -apple-system, sans-serif`;
+    ctx.fillStyle = col;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = col;
+    ctx.shadowBlur  = 32;
+    ctx.fillText(label, w / 2, h / 2);
+    ctx.restore();
+}
+
 // ── Animation loop ───────────────────────────────────────────
 function animate() {
     time += 0.016;
@@ -535,6 +557,7 @@ function animate() {
     drawBTCNeon();          // neon price BEHIND fish
     updateBubbles(); drawBubbles();
     fishArr.forEach(f => { f.update(); f.draw(); });
+    drawSqueezeAlert();     // on top of everything
     requestAnimationFrame(animate);
 }
 animate();
@@ -679,6 +702,14 @@ function computeVerdict(perps, etfNet7) {
 function updateOverlay(perps, btc, cotRaw, etf) {
     lastPerps   = perps;
     lastEtfNet7 = etf?.net_7d ?? null;
+
+    // Squeeze signal — funding extrême uniquement
+    if (perps?.avgFunding !== undefined) {
+        const f = perps.avgFunding;
+        if (f < -0.00005)      squeezeSignal = 'short'; // retail très short → squeeze haussier
+        else if (f > 0.00020)  squeezeSignal = 'long';  // retail surchargé long → squeeze baissier
+        else                   squeezeSignal = null;
+    }
     if (btc.usd > 0) btcNeonText = '$' + Math.round(btc.usd).toLocaleString('en-US');
     // Calculer les flux 7j par institution depuis l'historique
     const etf7d = etf?.history ? (() => {
