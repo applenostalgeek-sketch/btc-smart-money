@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Money vs The Tide — BTC</title>
+    <title>Bitcoin — qui mène le marché ? Institutions vs particuliers</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -142,18 +142,18 @@
 <div id="last-updated">—</div>
 
 <div id="title-area">
-    <h1>Smart Money vs The Tide</h1>
-    <p>Bitcoin — divergence institutionnel / retail</p>
+    <h1>Bitcoin — qui mène le marché ?</h1>
+    <p>Les institutions (poissons) face aux particuliers (le courant)</p>
 </div>
 
 <div id="legend">
     <div class="legend-item">
         <div class="legend-dot" style="background:rgba(56,189,248,0.85)"></div>
-        🐟 ETF fish (size = daily flow)
+        🐟 Poissons = institutions (taille = montant)
     </div>
     <div class="legend-item">
         <div class="legend-dot" style="background:rgba(150,150,255,0.5)"></div>
-        〰️ Current = retail leverage (Binance)
+        〰️ Courant = les particuliers (vert = achètent)
     </div>
 </div>
 
@@ -170,17 +170,17 @@
     <div class="vs-row">
         <div class="vs-side retail" id="retail-side">
             <div class="vs-emoji" id="retail-emoji">😐</div>
-            <div class="vs-label">Retail perps</div>
+            <div class="vs-label">Particuliers</div>
             <div class="vs-value" id="retail-val" style="color:#94a3b8">--</div>
-            <div class="vs-unit" id="retail-unit">OI total</div>
+            <div class="vs-unit" id="retail-unit">position du moment</div>
             <span class="vs-zone neutral" id="retail-zone">--</span>
         </div>
         <div class="vs-divider">VS</div>
         <div class="vs-side smart" id="smart-side">
             <div class="vs-emoji" id="smart-emoji">🏦</div>
-            <div class="vs-label">Smart Money</div>
+            <div class="vs-label">Institutions</div>
             <div class="vs-value" id="smart-val" style="color:#94a3b8">--</div>
-            <div class="vs-unit" id="smart-unit">M$ / 7j</div>
+            <div class="vs-unit" id="smart-unit">sur 7 jours</div>
             <span class="vs-zone buy" id="smart-zone">--</span>
         </div>
     </div>
@@ -199,6 +199,10 @@ let time = 0;
 let lastPerps   = null;
 let lastEtfNet7 = null;
 let btcNeonText = '';
+let lastVerdict = null;          // {badge, color, facts} — affiché en gros dans l'aquarium
+let dataDate    = null;          // date de la dernière donnée ETF
+let dataAgeDays = null;          // âge en jours de cette donnée
+let dataStale   = false;         // true si > 5 jours → garde-fou visuel
 
 function isMobile() { return window.innerWidth < 600; }
 
@@ -534,7 +538,7 @@ function drawSqueezeAlert() {
     if (!squeezeSignal) return;
     const w = canvas.width, h = canvas.height;
     const isShort = squeezeSignal === 'short';
-    const label = isShort ? 'SHORT SQUEEZE ↑' : 'LONG SQUEEZE ↓';
+    const label = isShort ? 'HAUSSE BRUTALE POSSIBLE ↑' : 'BAISSE BRUTALE POSSIBLE ↓';
     const col   = isShort ? '#4ade80' : '#f87171';
     const pulse = 0.55 + 0.2 * Math.sin(time * 2.2);
     ctx.save();
@@ -549,6 +553,57 @@ function drawSqueezeAlert() {
     ctx.restore();
 }
 
+// ── HEADLINE — le verdict en gros, lisible au premier coup d'œil ──
+// 3 lignes centrées en haut : MOT D'ÉTAT · phrase en clair · 2 chiffres.
+// Si les données sont périmées (> 5 jours), on remplace par un avertissement
+// pour ne jamais afficher un faux signal.
+function drawHeadline() {
+    const w = canvas.width || 1200, h = canvas.height || 700;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    if (dataStale) {
+        const fs = Math.max(18, Math.min(w / 20, 38));
+        ctx.font = `800 ${fs}px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif`;
+        ctx.fillStyle = '#fbbf24';
+        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 14;
+        ctx.fillText('⚠️ DONNÉES PÉRIMÉES', w / 2, h * 0.11);
+        ctx.shadowBlur = 0;
+        ctx.font = `600 ${Math.max(12, Math.min(w / 44, 16))}px -apple-system, sans-serif`;
+        ctx.fillStyle = 'rgba(226,232,240,0.75)';
+        ctx.fillText(`Dernière donnée : ${dataDate || '?'} · il y a ${dataAgeDays} jours`, w / 2, h * 0.11 + fs * 0.95);
+        ctx.restore();
+        return;
+    }
+
+    if (!lastVerdict) { ctx.restore(); return; }
+
+    // Ligne 1 — MOT D'ÉTAT (géant, coloré, halo)
+    const fs1 = Math.max(22, Math.min(w / 18, 46));
+    ctx.font = `900 ${fs1}px -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif`;
+    ctx.fillStyle = lastVerdict.color;
+    ctx.shadowColor = lastVerdict.color; ctx.shadowBlur = 22;
+    ctx.globalAlpha = 0.96;
+    ctx.fillText(lastVerdict.headline, w / 2, h * 0.115);
+
+    // Ligne 2 — phrase en clair
+    ctx.shadowBlur = 0; ctx.globalAlpha = 0.9;
+    const fs2 = Math.max(13, Math.min(w / 42, 18));
+    ctx.font = `600 ${fs2}px -apple-system, sans-serif`;
+    ctx.fillStyle = 'rgba(226,232,240,0.92)';
+    ctx.fillText(lastVerdict.sub || '', w / 2, h * 0.115 + fs1 * 0.78);
+
+    // Ligne 3 — les 2 chiffres moteurs
+    ctx.globalAlpha = 0.7;
+    const fs3 = Math.max(11, Math.min(w / 52, 14));
+    ctx.font = `600 ${fs3}px -apple-system, sans-serif`;
+    ctx.fillStyle = 'rgba(148,163,184,0.95)';
+    ctx.fillText(lastVerdict.facts || '', w / 2, h * 0.115 + fs1 * 0.78 + fs2 * 1.5);
+
+    ctx.restore();
+}
+
 // ── Animation loop ───────────────────────────────────────────
 function animate() {
     time += 0.016;
@@ -557,6 +612,7 @@ function animate() {
     drawBTCNeon();          // neon price BEHIND fish
     updateBubbles(); drawBubbles();
     fishArr.forEach(f => { f.update(); f.draw(); });
+    drawHeadline();         // verdict en gros, AU-DESSUS des poissons
     drawSqueezeAlert();     // on top of everything
     requestAnimationFrame(animate);
 }
@@ -596,7 +652,20 @@ async function fetchPerpsData() {
     const last3    = funding.slice(-3);
     const avgFund  = last3.reduce((s, f) => s + parseFloat(f.fundingRate), 0) / last3.length;
 
-    return { oiUSD: oiNow, oiChange7d, avgFunding: avgFund, history: oiHist };
+    // Vrai proxy RETAIL : ratio de COMPTES long/short (chaque petit compte = 1 voix).
+    // C'est plus "retail" que le funding (qui inclut market makers et arbitragistes).
+    // On récupère aussi les top traders pour mesurer la divergence retail↔pros.
+    let accountLongPct = null, topLongPct = null;
+    try {
+        const [gR, tR] = await Promise.all([
+            fetchWithTimeout('https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=BTCUSDT&period=1d&limit=1', 8000),
+            fetchWithTimeout('https://fapi.binance.com/futures/data/topLongShortAccountRatio?symbol=BTCUSDT&period=1d&limit=1', 8000),
+        ]);
+        if (gR.ok) { const g = await gR.json(); if (g.length) accountLongPct = parseFloat(g[g.length-1].longAccount); }
+        if (tR.ok) { const t = await tR.json(); if (t.length) topLongPct     = parseFloat(t[t.length-1].longAccount); }
+    } catch(e) { /* ratios optionnels — ne bloque pas */ }
+
+    return { oiUSD: oiNow, oiChange7d, avgFunding: avgFund, accountLongPct, topLongPct, history: oiHist };
 }
 
 async function fetchBTCCurrent() {
@@ -626,22 +695,21 @@ async function fetchLocalJSON(path) {
 // Valeurs réelles Binance : funding typiquement ±0.00001 à ±0.0005
 // Seuil "net directional" à ±0.000015 (= ±0.0015% par 8h)
 function perpsSignal(perps) {
-    if (!perps) return { word: 'N/A', emoji: '❓', zone: 'neutral', color: '#475569', sentiment: 50 };
-    const { oiChange7d, avgFunding } = perps;
-    const netLong  = avgFunding >  0.000015;  // plus de longs que de shorts
-    const netShort = avgFunding < -0.000015;  // plus de shorts que de longs
-    const oiUp     = oiChange7d >  0.05;      // retail ouvre des positions (+5%)
-    const oiDown   = oiChange7d < -0.05;      // retail ferme des positions (-5%)
+    if (!perps) return { bias: 'neutral', word: 'N/A', emoji: '❓', zone: 'neutral', color: '#475569', sentiment: 50 };
+    const { oiChange7d, avgFunding, accountLongPct } = perps;
+    // Direction des particuliers = funding OU ratio de comptes (le ratio prime s'il est extrême)
+    const netLong  = (accountLongPct != null && accountLongPct > 0.58) || avgFunding >  0.000015;
+    const netShort = (accountLongPct != null && accountLongPct < 0.45) || avgFunding < -0.000015;
+    const oiUp     = oiChange7d >  0.05;      // ils ouvrent des positions (+5%)
+    const oiDown   = oiChange7d < -0.05;      // ils ferment des positions (-5%)
 
-    // Cas clairs — OI monte ET direction claire
-    if (oiUp && netShort) return { word: 'SHORTS ↓', emoji: '🐻', zone: 'fear',    color: '#f87171', sentiment: 22 };
-    if (oiUp && netLong)  return { word: 'LONGS ↑',  emoji: '🔥', zone: 'greed',   color: '#fb923c', sentiment: 75 };
-    // Retail ferme ses positions
-    if (oiDown)           return { word: 'DÉBOUCLE',  emoji: '📉', zone: 'neutral', color: '#94a3b8', sentiment: 40 };
-    // Biais directionnel sans mouvement fort d'OI
-    if (netShort)         return { word: 'BIAIS ↓',   emoji: '😟', zone: 'fear',   color: '#f87171', sentiment: 35 };
-    if (netLong)          return { word: 'BIAIS ↑',   emoji: '😏', zone: 'greed',  color: '#fb923c', sentiment: 65 };
-    return                       { word: 'NEUTRE',    emoji: '😐', zone: 'neutral', color: '#94a3b8', sentiment: 50 };
+    // `bias` = pour la logique (long/short/unwind/neutral) ; `word` = affichage simple
+    if (oiUp && netShort) return { bias: 'short',   word: 'VENDENT',          emoji: '🐻', zone: 'fear',    color: '#f87171', sentiment: 22 };
+    if (oiUp && netLong)  return { bias: 'long',    word: 'ACHÈTENT',         emoji: '🔥', zone: 'greed',   color: '#fb923c', sentiment: 75 };
+    if (oiDown)           return { bias: 'unwind',  word: 'SE RETIRENT',      emoji: '📉', zone: 'neutral', color: '#94a3b8', sentiment: 40 };
+    if (netShort)         return { bias: 'short',   word: 'PLUTÔT VENDEURS',  emoji: '😟', zone: 'fear',    color: '#f87171', sentiment: 35 };
+    if (netLong)          return { bias: 'long',    word: 'PLUTÔT ACHETEURS', emoji: '😏', zone: 'greed',   color: '#fb923c', sentiment: 65 };
+    return                       { bias: 'neutral', word: 'NEUTRES',          emoji: '😐', zone: 'neutral', color: '#94a3b8', sentiment: 50 };
 }
 
 // Anime les poissons selon le sentiment retail réel
@@ -649,53 +717,83 @@ function perpsToPseudoFG(perps) {
     return perpsSignal(perps).sentiment;
 }
 
-// ── Signal global — texte "ah oui" immédiat ───────────────────
+// Formatte un montant en M$ → "1.7 Md" / "320 M"
+function fmtMd(absM) {
+    return absM >= 1000 ? (absM / 1000).toFixed(1) + ' Md' : Math.round(absM) + ' M';
+}
+
+// ── Verdict global — un MOT d'état + une phrase claire + 2 chiffres ──
+// Modèle : matrice Institutions (flux ETF) × Retail (perps Binance).
+// Le but : compris au premier coup d'œil, sans lire un seul tableau.
 function computeVerdict(perps, etfNet7) {
-    if (!perps) return { badge: '…', color: '#94a3b8', text: 'Connexion aux marchés…' };
+    const grey = '#94a3b8', green = '#4ade80', red = '#f87171', orange = '#fb923c', amber = '#fbbf24';
+    if (!perps) return { headline: 'CONNEXION…', sub: 'Lecture des marchés', color: grey, badge: '…', text: 'Connexion aux marchés…', facts: '' };
 
-    const sig       = perpsSignal(perps);
-    const etfBuying = etfNet7 !== null && etfNet7 >  100;
-    const etfSelling= etfNet7 !== null && etfNet7 < -100;
-    const etfM      = etfNet7 !== null ? `$${Math.abs(Math.round(etfNet7))}M` : null;
-    const isShort   = sig.word === 'SHORTS ↓' || sig.word === 'BIAIS ↓';
-    const isLong    = sig.word === 'LONGS ↑'  || sig.word === 'BIAIS ↑';
-    const oiPct     = (Math.abs(perps.oiChange7d) * 100).toFixed(0) + '%';
+    const sig      = perpsSignal(perps);
+    const instBuy  = etfNet7 !== null && etfNet7 >  100;
+    const instSell = etfNet7 !== null && etfNet7 < -100;
+    const retLong  = sig.bias === 'long';
+    const retShort = sig.bias === 'short';
+    const etfM     = etfNet7 !== null ? `$${fmtMd(Math.abs(etfNet7))}` : 'N/A';
 
-    // ⚡ LE signal le plus fort : retail parie À LA BAISSE + institutions achètent
-    if (isShort && etfBuying) return {
-        badge: '⚡ Signal haussier contrarian',
-        color: '#4ade80',
-        text: `Le retail a ouvert ${oiPct} de paris baissiers en plus cette semaine. En face, les institutions ont acheté ${etfM} de vrai Bitcoin via les ETFs. Historiquement : quand le retail est short et les institutionnels achètent, le prix monte et les shorts se font liquider.`,
-    };
-    // ⚠️ Retail parie À LA HAUSSE + institutions vendent
-    if (isLong && etfSelling) return {
-        badge: '⚠️ Signal baissier contrarian',
-        color: '#f87171',
-        text: `Le retail a ouvert ${oiPct} de paris haussiers en plus. En face, les institutions sortent (${etfM} de sorties ETF). Quand retail et institutionnels vont dans des sens opposés comme ça, le retail a souvent tort.`,
-    };
-    // Retail short, mais institutions pas vraiment actives
-    if (isShort) return {
-        badge: '👀 Retail baissier — surveiller les ETFs',
-        color: '#fbbf24',
-        text: `Le retail parie à la baisse (${oiPct} de positions shorts supplémentaires). Les ETFs ne montrent pas encore de signal institutionnel fort. Surveiller si les institutions commencent à acheter.`,
-    };
-    // Retail long, institutions aussi
-    if (isLong && etfBuying) return {
-        badge: '🌡️ Tout le monde achète',
-        color: '#fb923c',
-        text: `Retail et institutions sont tous les deux haussiers (ETF +${etfM}, OI +${oiPct} en longs). Attention : quand tout le monde est du même côté, le retournement peut être violent.`,
-    };
-    // Retail ferme ses positions
-    if (sig.word === 'DÉBOUCLE') return {
-        badge: '📉 Retail déboucle',
-        color: '#94a3b8',
-        text: `Le retail réduit ses positions (-${oiPct} d'OI en 7j). ${etfBuying ? `Les institutions continuent d'acheter (ETF +${etfM}). Signe de stabilisation possible.` : 'Attendre un signal institutionnel clair.'}`,
-    };
-    return {
-        badge: '〰️ Pas de signal clair',
-        color: '#94a3b8',
-        text: `Retail et institutions ne montrent pas de divergence nette cette semaine. OI ${perps.oiChange7d >= 0 ? '+' : ''}${(perps.oiChange7d*100).toFixed(1)}%, ETF ${etfNet7 !== null ? (etfNet7 >= 0 ? '+' : '') + '$' + Math.round(etfNet7) + 'M' : 'N/A'} / 7j.`,
-    };
+    // Faits compacts sous le titre — en français simple, pas de jargon
+    const instFact = etfNet7 !== null
+        ? `🏦 Institutions : ${etfNet7 >= 0 ? '+' : '−'}${etfM}$ ${etfNet7 >= 0 ? 'investis' : 'retirés'} (7j)`
+        : '🏦 Institutions : données indisponibles';
+    let retailFact;
+    if (perps.accountLongPct != null) {
+        const p = Math.round(perps.accountLongPct * 100);
+        retailFact = p >= 50 ? `🐟 Particuliers : ${p}% achètent` : `🐟 Particuliers : ${100 - p}% vendent`;
+    } else {
+        retailFact = retLong ? '🐟 Particuliers : acheteurs' : retShort ? '🐟 Particuliers : vendeurs' : '🐟 Particuliers : neutres';
+    }
+    const facts = `${instFact}      ${retailFact}`;
+
+    let r;
+    // ── Les 2 divergences fortes (cœur de la thèse : être à l'inverse des particuliers) ──
+    if (instBuy && retShort) {
+        r = { headline: 'LES INSTITUTIONS ACHÈTENT', color: green,
+              sub: 'Les particuliers vendent → signal haussier',
+              text: `Les gros achètent (${etfM}$ entrés dans les ETF sur 7 jours) pendant que les particuliers parient sur la baisse. Historiquement, c'est le bon côté : quand les particuliers vendent et que les institutions achètent, le prix monte souvent.` };
+    } else if (instSell && retLong) {
+        r = { headline: 'LES INSTITUTIONS VENDENT', color: red,
+              sub: 'Les particuliers achètent → prudence',
+              text: `Les gros sortent (${etfM}$ retirés des ETF sur 7 jours) pendant que les particuliers continuent d'acheter. Quand les deux vont à l'inverse comme ça, ce sont généralement les particuliers qui ont tort. Prudence.` };
+    // ── Tout le monde du même côté ──
+    } else if (instBuy && retLong) {
+        r = { headline: 'TOUT LE MONDE ACHÈTE', color: orange,
+              sub: 'Marché en surchauffe',
+              text: `Institutions et particuliers achètent en même temps (${etfM}$ entrés dans les ETF). Ça peut continuer, mais quand tout le monde est du même côté, le retournement peut être brutal.` };
+    } else if (instSell && retShort) {
+        r = { headline: 'TOUT LE MONDE VEND', color: amber,
+              sub: 'Panique générale → rebond possible',
+              text: `Institutions et particuliers vendent ensemble (${etfM}$ retirés des ETF). Pessimisme général : souvent proche d'un point bas, mais aucun acheteur clair pour l'instant.` };
+    // ── Une seule force active ──
+    } else if (instBuy) {
+        r = { headline: 'LES INSTITUTIONS ACHÈTENT', color: green,
+              sub: 'Les particuliers attendent',
+              text: `Les institutions accumulent (${etfM}$ entrés dans les ETF sur 7 jours). Les particuliers n'ont pas de direction marquée. La demande des gros soutient le marché.` };
+    } else if (instSell) {
+        r = { headline: 'LES INSTITUTIONS VENDENT', color: red,
+              sub: 'Les particuliers attendent',
+              text: `Les institutions sortent (${etfM}$ retirés des ETF sur 7 jours). Les particuliers n'ont pas de direction marquée. La pression vendeuse vient des gros.` };
+    } else if (retLong) {
+        r = { headline: 'LES PARTICULIERS ACHÈTENT', color: orange,
+              sub: 'Les institutions restent à l\'écart',
+              text: `Les particuliers misent sur la hausse, mais les institutions sont calmes côté ETF. Sans relais des gros, ce genre de hausse tient rarement.` };
+    } else if (retShort) {
+        r = { headline: 'LES PARTICULIERS VENDENT', color: amber,
+              sub: 'Les institutions restent à l\'écart',
+              text: `Les particuliers parient sur la baisse, institutions calmes côté ETF. À surveiller : si les gros se mettent à acheter dans ce pessimisme.` };
+    } else {
+        r = { headline: 'MARCHÉ CALME', color: grey,
+              sub: 'Aucun camp ne bouge vraiment',
+              text: `Ni les institutions ni les particuliers ne montrent de direction nette cette semaine.` };
+    }
+
+    r.badge = r.headline;   // la carte réutilise le mot d'état comme titre
+    r.facts = facts;
+    return r;
 }
 
 // ── Update overlay card ──────────────────────────────────────
@@ -725,9 +823,11 @@ function updateOverlay(perps, btc, cotRaw, etf) {
     setInstitutionFish(etf7d);
     lastEtfNet7 = etf?.net_7d ?? null; // keep for current direction fallback
 
-    // Timestamp bas-droite — date de la donnée ETF (ce que l'utilisateur veut savoir)
-    const dataDate = etf?.latest?.date || null;
+    // Timestamp bas-droite + garde-fou fraîcheur (globals lus par drawHeadline)
+    dataDate = etf?.latest?.date || null;
     if (dataDate) {
+        dataAgeDays = Math.floor((Date.now() - new Date(dataDate + 'T00:00:00Z').getTime()) / 86400000);
+        dataStale   = dataAgeDays > 5;   // ETF = jours ouvrés → 5j tolère un long week-end
         try {
             const d = new Date(dataDate + 'T00:00:00Z');
             const fmt = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'UTC' });
@@ -739,6 +839,7 @@ function updateOverlay(perps, btc, cotRaw, etf) {
 
     const etfNet7 = etf?.net_7d ?? null;
     const verdict = computeVerdict(perps, etfNet7);
+    lastVerdict = verdict;   // → affiché en gros dans l'aquarium par drawHeadline
     document.getElementById('signal-badge').textContent = verdict.badge;
     document.getElementById('signal-badge').style.color = verdict.color;
     document.getElementById('live-dot').style.background = verdict.color;
@@ -752,16 +853,21 @@ function updateOverlay(perps, btc, cotRaw, etf) {
 
     if (perps) {
         const sig = perpsSignal(perps);
-        const oiPct = (perps.oiChange7d >= 0 ? '+' : '') + (perps.oiChange7d * 100).toFixed(1) + '%';
-        const fundPct = (perps.avgFunding >= 0 ? '+' : '') + (perps.avgFunding * 100).toFixed(4) + '%/8h';
         document.getElementById('retail-emoji').textContent = sig.emoji;
         retailVal.textContent   = sig.word;
         retailVal.style.color   = sig.color;
         retailVal.style.fontSize = '17px';
-        document.getElementById('retail-unit').textContent = `OI ${oiPct} · fund ${fundPct}`;
+        // Unité : % de particuliers acheteurs (clair), sinon repli sur la tendance des positions
+        if (perps.accountLongPct != null) {
+            const p = Math.round(perps.accountLongPct * 100);
+            document.getElementById('retail-unit').textContent = p >= 50 ? `${p}% achètent` : `${100 - p}% vendent`;
+        } else {
+            document.getElementById('retail-unit').textContent =
+                perps.oiChange7d > 0.05 ? 'misent davantage' : perps.oiChange7d < -0.05 ? 'se retirent' : 'positions stables';
+        }
         retailZone.textContent  = perps.oiUSD >= 1e9
-            ? '$' + (perps.oiUSD / 1e9).toFixed(1) + 'Mds engagés'
-            : '$' + (perps.oiUSD / 1e6).toFixed(0) + 'M engagés';
+            ? '$' + (perps.oiUSD / 1e9).toFixed(1) + ' Md misés'
+            : '$' + (perps.oiUSD / 1e6).toFixed(0) + ' M misés';
         retailZone.className    = `vs-zone ${sig.zone}`;
         retailSide.classList.toggle('greed', sig.zone === 'greed');
     } else {
@@ -778,15 +884,15 @@ function updateOverlay(perps, btc, cotRaw, etf) {
     const smartSide  = document.getElementById('smart-side');
 
     if (etfNet7 !== null) {
-        const sign = etfNet7 >= 0 ? '+' : '';
+        const sign = etfNet7 >= 0 ? '+' : '−';
         const col  = etfNet7 > 100 ? '#4ade80' : etfNet7 < -100 ? '#f87171' : '#94a3b8';
-        const zone = etfNet7 > 500 ? 'Afflux massif' : etfNet7 > 100 ? 'Achètent' : etfNet7 < -500 ? 'Fuite massive' : etfNet7 < -100 ? 'Vendent' : 'Neutre';
+        const zone = etfNet7 > 500 ? 'Achats massifs' : etfNet7 > 100 ? 'Achètent' : etfNet7 < -500 ? 'Ventes massives' : etfNet7 < -100 ? 'Vendent' : 'Neutre';
         const zCls = etfNet7 > 100 ? 'buy' : etfNet7 < -100 ? 'sell' : 'neutral';
         smartEmoji.textContent = etfNet7 >= 100 ? '🏦' : etfNet7 <= -100 ? '🚨' : '🏦';
-        smartVal.textContent   = sign + '$' + Math.round(Math.abs(etfNet7)) + 'M';
+        smartVal.textContent   = sign + '$' + fmtMd(Math.abs(etfNet7));
         smartVal.style.color   = col;
         smartVal.style.fontSize = '';
-        smartUnit.textContent  = 'achetés en 7j (ETF spot)';
+        smartUnit.textContent  = etfNet7 >= 0 ? 'investis sur 7 jours' : 'retirés sur 7 jours';
         smartZone.textContent  = zone;
         smartZone.className    = `vs-zone ${zCls}`;
         smartSide.classList.toggle('bear', etfNet7 < -100);
@@ -795,8 +901,8 @@ function updateOverlay(perps, btc, cotRaw, etf) {
         smartEmoji.textContent = '🐟';
         smartVal.textContent   = (net >= 0 ? '+' : '') + net.toLocaleString();
         smartVal.style.color   = net > 0 ? '#4ade80' : net < 0 ? '#f87171' : '#94a3b8';
-        smartUnit.textContent  = 'contrats HF (COT CFTC)';
-        smartZone.textContent  = net > 0 ? 'Nets longs' : 'Nets courts';
+        smartUnit.textContent  = 'positions à terme';
+        smartZone.textContent  = net > 0 ? 'Acheteuses' : 'Vendeuses';
         smartZone.className    = `vs-zone ${net > 0 ? 'buy' : 'sell'}`;
     } else {
         smartVal.textContent  = 'N/A';
