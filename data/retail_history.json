@@ -1,0 +1,230 @@
+{
+  "last_updated": "2026-05-31 17:07 UTC",
+  "source": "Binance global/top LongShortAccountRatio + CryptoCompare (close BTC)",
+  "history": [
+    {
+      "date": "2026-04-21",
+      "btc_close": 76349.35
+    },
+    {
+      "date": "2026-04-22",
+      "btc_close": 78209.43
+    },
+    {
+      "date": "2026-04-23",
+      "btc_close": 78283.64
+    },
+    {
+      "date": "2026-04-24",
+      "btc_close": 77463.4
+    },
+    {
+      "date": "2026-04-25",
+      "btc_close": 77645.78
+    },
+    {
+      "date": "2026-04-26",
+      "btc_close": 78673.71
+    },
+    {
+      "date": "2026-04-27",
+      "btc_close": 77373.54
+    },
+    {
+      "date": "2026-04-28",
+      "btc_close": 76330.13
+    },
+    {
+      "date": "2026-04-29",
+      "btc_close": 75758.34
+    },
+    {
+      "date": "2026-04-30",
+      "btc_close": 76318.61
+    },
+    {
+      "date": "2026-05-01",
+      "btc_close": 78229.09
+    },
+    {
+      "date": "2026-05-02",
+      "retail_long": 0.3669,
+      "top_long": 0.3729,
+      "btc_close": 78676.88
+    },
+    {
+      "date": "2026-05-03",
+      "retail_long": 0.3744,
+      "top_long": 0.3824,
+      "btc_close": 78556.51
+    },
+    {
+      "date": "2026-05-04",
+      "retail_long": 0.3659,
+      "top_long": 0.3782,
+      "btc_close": 79847.88
+    },
+    {
+      "date": "2026-05-05",
+      "retail_long": 0.345,
+      "top_long": 0.3562,
+      "btc_close": 80906.66
+    },
+    {
+      "date": "2026-05-06",
+      "retail_long": 0.3361,
+      "top_long": 0.3434,
+      "btc_close": 81434.43
+    },
+    {
+      "date": "2026-05-07",
+      "retail_long": 0.3695,
+      "top_long": 0.3738,
+      "btc_close": 80005.6
+    },
+    {
+      "date": "2026-05-08",
+      "retail_long": 0.4307,
+      "top_long": 0.4366,
+      "btc_close": 80191.99
+    },
+    {
+      "date": "2026-05-09",
+      "retail_long": 0.4386,
+      "top_long": 0.4349,
+      "btc_close": 80661.0
+    },
+    {
+      "date": "2026-05-10",
+      "retail_long": 0.4206,
+      "top_long": 0.4173,
+      "btc_close": 82193.54
+    },
+    {
+      "date": "2026-05-11",
+      "retail_long": 0.3819,
+      "top_long": 0.3834,
+      "btc_close": 81728.64
+    },
+    {
+      "date": "2026-05-12",
+      "retail_long": 0.3782,
+      "top_long": 0.3904,
+      "btc_close": 80485.29
+    },
+    {
+      "date": "2026-05-13",
+      "retail_long": 0.4278,
+      "top_long": 0.4343,
+      "btc_close": 79290.82
+    },
+    {
+      "date": "2026-05-14",
+      "retail_long": 0.4976,
+      "top_long": 0.4958,
+      "btc_close": 81078.53
+    },
+    {
+      "date": "2026-05-15",
+      "retail_long": 0.3798,
+      "top_long": 0.3787,
+      "btc_close": 79065.04
+    },
+    {
+      "date": "2026-05-16",
+      "retail_long": 0.5226,
+      "top_long": 0.5207,
+      "btc_close": 78114.75
+    },
+    {
+      "date": "2026-05-17",
+      "retail_long": 0.5518,
+      "top_long": 0.5483,
+      "btc_close": 77416.47
+    },
+    {
+      "date": "2026-05-18",
+      "retail_long": 0.5584,
+      "top_long": 0.5583,
+      "btc_close": 76955.63
+    },
+    {
+      "date": "2026-05-19",
+      "retail_long": 0.5847,
+      "top_long": 0.5809,
+      "btc_close": 76776.1
+    },
+    {
+      "date": "2026-05-20",
+      "retail_long": 0.5925,
+      "top_long": 0.5896,
+      "btc_close": 77497.79
+    },
+    {
+      "date": "2026-05-21",
+      "retail_long": 0.5671,
+      "top_long": 0.5569,
+      "btc_close": 77552.94
+    },
+    {
+      "date": "2026-05-22",
+      "retail_long": 0.5535,
+      "top_long": 0.5499,
+      "btc_close": 75466.52
+    },
+    {
+      "date": "2026-05-23",
+      "retail_long": 0.6013,
+      "top_long": 0.6073,
+      "btc_close": 76671.89
+    },
+    {
+      "date": "2026-05-24",
+      "retail_long": 0.5522,
+      "top_long": 0.5463,
+      "btc_close": 77000.57
+    },
+    {
+      "date": "2026-05-25",
+      "retail_long": 0.5374,
+      "top_long": 0.5443,
+      "btc_close": 77273.26
+    },
+    {
+      "date": "2026-05-26",
+      "retail_long": 0.5028,
+      "top_long": 0.5085,
+      "btc_close": 75842.51
+    },
+    {
+      "date": "2026-05-27",
+      "retail_long": 0.5725,
+      "top_long": 0.5772,
+      "btc_close": 74348.55
+    },
+    {
+      "date": "2026-05-28",
+      "retail_long": 0.6261,
+      "top_long": 0.6252,
+      "btc_close": 73531.95
+    },
+    {
+      "date": "2026-05-29",
+      "retail_long": 0.6388,
+      "top_long": 0.6378,
+      "btc_close": 73384.46
+    },
+    {
+      "date": "2026-05-30",
+      "retail_long": 0.6235,
+      "top_long": 0.6237,
+      "btc_close": 73794.27
+    },
+    {
+      "date": "2026-05-31",
+      "retail_long": 0.6032,
+      "top_long": 0.6008,
+      "btc_close": 73434.75
+    }
+  ]
+}
