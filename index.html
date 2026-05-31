@@ -704,12 +704,12 @@ function perpsSignal(perps) {
     const oiDown   = oiChange7d < -0.05;      // ils ferment des positions (-5%)
 
     // `bias` = pour la logique (long/short/unwind/neutral) ; `word` = affichage simple
-    if (oiUp && netShort) return { bias: 'short',   word: 'VENDENT',          emoji: '🐻', zone: 'fear',    color: '#f87171', sentiment: 22 };
-    if (oiUp && netLong)  return { bias: 'long',    word: 'ACHÈTENT',         emoji: '🔥', zone: 'greed',   color: '#fb923c', sentiment: 75 };
-    if (oiDown)           return { bias: 'unwind',  word: 'SE RETIRENT',      emoji: '📉', zone: 'neutral', color: '#94a3b8', sentiment: 40 };
-    if (netShort)         return { bias: 'short',   word: 'PLUTÔT VENDEURS',  emoji: '😟', zone: 'fear',    color: '#f87171', sentiment: 35 };
-    if (netLong)          return { bias: 'long',    word: 'PLUTÔT ACHETEURS', emoji: '😏', zone: 'greed',   color: '#fb923c', sentiment: 65 };
-    return                       { bias: 'neutral', word: 'NEUTRES',          emoji: '😐', zone: 'neutral', color: '#94a3b8', sentiment: 50 };
+    if (oiUp && netShort) return { bias: 'short',   word: 'À LA BAISSE',        emoji: '🐻', zone: 'fear',    color: '#f87171', sentiment: 22 };
+    if (oiUp && netLong)  return { bias: 'long',    word: 'À LA HAUSSE',        emoji: '🔥', zone: 'greed',   color: '#fb923c', sentiment: 75 };
+    if (oiDown)           return { bias: 'unwind',  word: 'SE RETIRENT',        emoji: '📉', zone: 'neutral', color: '#94a3b8', sentiment: 40 };
+    if (netShort)         return { bias: 'short',   word: 'PLUTÔT À LA BAISSE', emoji: '😟', zone: 'fear',    color: '#f87171', sentiment: 35 };
+    if (netLong)          return { bias: 'long',    word: 'PLUTÔT À LA HAUSSE', emoji: '😏', zone: 'greed',   color: '#fb923c', sentiment: 65 };
+    return                       { bias: 'neutral', word: 'NEUTRES',            emoji: '😐', zone: 'neutral', color: '#94a3b8', sentiment: 50 };
 }
 
 // Anime les poissons selon le sentiment retail réel
@@ -743,9 +743,9 @@ function computeVerdict(perps, etfNet7) {
     let retailFact;
     if (perps.accountLongPct != null) {
         const p = Math.round(perps.accountLongPct * 100);
-        retailFact = p >= 50 ? `🐟 Particuliers : ${p}% achètent` : `🐟 Particuliers : ${100 - p}% vendent`;
+        retailFact = p >= 50 ? `🐟 Particuliers : ${p}% à la hausse` : `🐟 Particuliers : ${100 - p}% à la baisse`;
     } else {
-        retailFact = retLong ? '🐟 Particuliers : acheteurs' : retShort ? '🐟 Particuliers : vendeurs' : '🐟 Particuliers : neutres';
+        retailFact = retLong ? '🐟 Particuliers : à la hausse' : retShort ? '🐟 Particuliers : à la baisse' : '🐟 Particuliers : neutres';
     }
     const facts = `${instFact}      ${retailFact}`;
 
@@ -753,12 +753,12 @@ function computeVerdict(perps, etfNet7) {
     // ── Les 2 divergences fortes (cœur de la thèse : être à l'inverse des particuliers) ──
     if (instBuy && retShort) {
         r = { headline: 'LES INSTITUTIONS ACHÈTENT', color: green,
-              sub: 'Les particuliers vendent → signal haussier',
-              text: `Les gros achètent (${etfM}$ entrés dans les ETF sur 7 jours) pendant que les particuliers parient sur la baisse. Historiquement, c'est le bon côté : quand les particuliers vendent et que les institutions achètent, le prix monte souvent.` };
+              sub: 'Les particuliers parient à la baisse → signal haussier',
+              text: `Les gros achètent (${etfM}$ entrés dans les ETF sur 7 jours) pendant que les particuliers parient sur la baisse. Historiquement, c'est le bon côté : quand les particuliers sont à la baisse et que les institutions achètent, le prix monte souvent.` };
     } else if (instSell && retLong) {
         r = { headline: 'LES INSTITUTIONS VENDENT', color: red,
-              sub: 'Les particuliers achètent → prudence',
-              text: `Les gros sortent (${etfM}$ retirés des ETF sur 7 jours) pendant que les particuliers continuent d'acheter. Quand les deux vont à l'inverse comme ça, ce sont généralement les particuliers qui ont tort. Prudence.` };
+              sub: 'Les particuliers parient à la hausse → prudence',
+              text: `Les gros sortent (${etfM}$ retirés des ETF sur 7 jours) pendant que les particuliers parient sur la hausse. Quand les deux vont à l'inverse comme ça, ce sont généralement les particuliers qui ont tort. Prudence.` };
     // ── Tout le monde du même côté ──
     } else if (instBuy && retLong) {
         r = { headline: 'TOUT LE MONDE ACHÈTE', color: orange,
@@ -778,11 +778,11 @@ function computeVerdict(perps, etfNet7) {
               sub: 'Les particuliers attendent',
               text: `Les institutions sortent (${etfM}$ retirés des ETF sur 7 jours). Les particuliers n'ont pas de direction marquée. La pression vendeuse vient des gros.` };
     } else if (retLong) {
-        r = { headline: 'LES PARTICULIERS ACHÈTENT', color: orange,
+        r = { headline: 'LES PARTICULIERS À LA HAUSSE', color: orange,
               sub: 'Les institutions restent à l\'écart',
               text: `Les particuliers misent sur la hausse, mais les institutions sont calmes côté ETF. Sans relais des gros, ce genre de hausse tient rarement.` };
     } else if (retShort) {
-        r = { headline: 'LES PARTICULIERS VENDENT', color: amber,
+        r = { headline: 'LES PARTICULIERS À LA BAISSE', color: amber,
               sub: 'Les institutions restent à l\'écart',
               text: `Les particuliers parient sur la baisse, institutions calmes côté ETF. À surveiller : si les gros se mettent à acheter dans ce pessimisme.` };
     } else {
@@ -860,7 +860,7 @@ function updateOverlay(perps, btc, cotRaw, etf) {
         // Unité : % de particuliers acheteurs (clair), sinon repli sur la tendance des positions
         if (perps.accountLongPct != null) {
             const p = Math.round(perps.accountLongPct * 100);
-            document.getElementById('retail-unit').textContent = p >= 50 ? `${p}% achètent` : `${100 - p}% vendent`;
+            document.getElementById('retail-unit').textContent = p >= 50 ? `${p}% à la hausse` : `${100 - p}% à la baisse`;
         } else {
             document.getElementById('retail-unit').textContent =
                 perps.oiChange7d > 0.05 ? 'misent davantage' : perps.oiChange7d < -0.05 ? 'se retirent' : 'positions stables';
