@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Historique — qui a eu raison ? Institutions vs particuliers</title>
+<title>Historique — le prix suit qui ? Institutions vs particuliers</title>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -18,18 +18,12 @@
     a.back:hover { text-decoration:underline; }
 
     h1 { font-size: 20px; font-weight: 800; margin: 14px 0 4px; letter-spacing:-0.3px; }
-    .sub { font-size: 12.5px; color: var(--dim); margin-bottom: 20px; line-height:1.5; }
+    .sub { font-size: 12.5px; color: var(--dim); margin-bottom: 20px; line-height:1.55; }
 
-    /* ── SCOREBOARD ── */
-    #scoreboard {
-        display:flex; align-items:stretch; gap:10px; flex-wrap:wrap;
-        margin-bottom: 8px;
-    }
-    .score-card {
-        flex:1; min-width: 150px;
+    #scoreboard { display:flex; gap:10px; flex-wrap:wrap; margin-bottom: 8px; }
+    .score-card { flex:1; min-width: 160px;
         background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
-        border-radius: 16px; padding: 14px 16px;
-    }
+        border-radius: 16px; padding: 14px 16px; }
     .score-card .lbl { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--dim); margin-bottom:8px; }
     .duel { display:flex; align-items:center; justify-content:center; gap:14px; }
     .duel .side { text-align:center; }
@@ -38,20 +32,30 @@
     .duel .who { font-size: 9px; text-transform:uppercase; letter-spacing:0.5px; color:var(--dim); margin-top:3px; }
     .duel .vs  { font-size: 12px; font-weight:800; color:rgba(255,255,255,0.25); }
     .num.inst { color: var(--inst); } .num.part { color: var(--part); }
-    .punch { font-size: 22px; font-weight: 900; letter-spacing:-0.5px; }
+    .punch { font-size: 19px; font-weight: 800; letter-spacing:-0.3px; line-height:1.25; }
     .punch small { display:block; font-size:11px; font-weight:600; color:var(--dim); letter-spacing:0; margin-top:6px; }
 
-    /* ── CHART ── */
     #wrap { margin-top: 18px; background: rgba(255,255,255,0.02);
         border:1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 6px; }
     #chart { width: 100%; display:block; }
 
-    /* ── LEGEND ── */
-    #legend { display:flex; flex-wrap:wrap; gap: 14px 20px; margin-top: 16px; font-size:11.5px; color:#94a3b8; }
+    #episodes { margin-top: 16px; display:flex; flex-direction:column; gap:8px; }
+    .ep { display:flex; align-items:flex-start; gap:11px; font-size:13px; line-height:1.45;
+        background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06);
+        border-radius:12px; padding:11px 13px; }
+    .ep .pin { flex-shrink:0; width:24px; height:24px; border-radius:50%; background:var(--gold);
+        color:#0b1220; font-weight:800; font-size:12px; display:flex; align-items:center; justify-content:center; }
+    .ep .txt b.up   { color:var(--green); } .ep .txt b.down { color:var(--red); }
+    .ep .txt .follow { font-weight:700; }
+    .ep .txt .follow.gros  { color:var(--inst); }
+    .ep .txt .follow.foule { color:var(--part); }
+    .ep .txt .pend { color:var(--dim); font-style:italic; }
+
+    #legend { display:flex; flex-wrap:wrap; gap: 12px 20px; margin-top: 16px; font-size:11.5px; color:#94a3b8; }
     .lg { display:flex; align-items:center; gap:7px; }
     .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-    .dot.green{background:var(--green)} .dot.red{background:var(--red)}
-    .dot.grey{background:#334155} .dot.inst{background:var(--inst)} .dot.part{background:var(--part)}
+    .dot.green{background:var(--green)} .dot.red{background:var(--red)} .dot.grey{background:#334155}
+    .swatch { width:16px; height:10px; border-radius:3px; flex-shrink:0; }
 
     #loading { color: var(--dim); font-size: 13px; padding: 30px 0; }
     .err { color: var(--red); font-size: 13px; }
@@ -65,240 +69,243 @@
 <body>
 
 <a class="back" href="index.html">← Retour à l'aquarium</a>
-<h1>Qui a eu raison ? <span style="color:var(--dim);font-weight:600">jour par jour</span></h1>
+<h1>Le prix suit qui ? <span style="color:var(--dim);font-weight:600">institutions vs particuliers</span></h1>
 <p class="sub">
-    Chaque jour, les <b style="color:var(--inst)">institutions</b> (flux ETF) et les
-    <b style="color:var(--part)">particuliers</b> (positionnement Binance) parient sur la hausse 🟢 ou la baisse 🔴.
-    Le <b>gagnant</b> = celui dont le pari correspond au mouvement du prix le lendemain.
+    On repère les <b>épisodes de désaccord</b> : quand les <b style="color:var(--inst)">institutions</b> (flux ETF)
+    et les <b style="color:var(--part)">particuliers</b> (positionnement Binance) parient à l'inverse l'un de l'autre.
+    À chaque épisode (marqueur sur la courbe), la zone <b>du désaccord + 5 jours après</b> est teintée 🟩/🟥 selon ce
+    que le prix a fait — pour voir s'il a plutôt suivi les gros ou la foule. Un épisode trop récent reste « en cours ».
 </p>
 
 <div id="scoreboard"></div>
-
 <div id="wrap"><canvas id="chart"></canvas></div>
+<div id="episodes"></div>
 
 <div id="legend">
-    <div class="lg"><span class="dot green"></span> parie / part à la hausse</div>
-    <div class="lg"><span class="dot red"></span> parie / part à la baisse</div>
+    <div class="lg"><span class="dot green"></span> parie / penche à la hausse</div>
+    <div class="lg"><span class="dot red"></span> parie / penche à la baisse</div>
     <div class="lg"><span class="dot grey"></span> institutions : marché fermé (week-end)</div>
-    <div class="lg">🏦 institutions ont eu raison</div>
-    <div class="lg">🐟 particuliers ont eu raison</div>
-    <div class="lg"><span style="color:var(--dim)">·</span> accord (pas de duel)</div>
+    <div class="lg"><span class="swatch" style="background:rgba(74,222,128,0.18)"></span> sur la fenêtre : le prix a monté</div>
+    <div class="lg"><span class="swatch" style="background:rgba(248,113,113,0.18)"></span> sur la fenêtre : le prix a baissé</div>
+    <div class="lg"><span class="swatch" style="background:rgba(148,163,184,0.14)"></span> épisode en cours (pas encore jugé)</div>
 </div>
 
 <p id="loading">Chargement de l'historique…</p>
 
 <script>
-const INST_TH = 20;   // seuil flux ETF (M$) pour considérer un pari institutionnel
+const INST_TH = 20;    // seuil flux ETF (M$) pour un pari institutionnel
+const TAIL = 5;        // on juge l'épisode jusqu'à 5 jours APRÈS sa fin (capte toute la réaction)
+const DEAD = 1.0;      // mouvement < 1% = match nul (on ne crédite personne)
+const MERGE_GAP = 4;   // fusionne des jours de désaccord espacés de ≤ 4 jours calendaires (week-ends)
 const $ = id => document.getElementById(id);
 const sign = x => x > 0 ? 1 : x < 0 ? -1 : 0;
+const dayDiff = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
 
-async function getJSON(path) {
-    const r = await fetch(path);
-    if (!r.ok) throw new Error(path + ' ' + r.status);
-    return r.json();
-}
+async function getJSON(p){ const r = await fetch(p); if(!r.ok) throw new Error(p+' '+r.status); return r.json(); }
 
 function build(retailHist, etfHist) {
-    // Map prix par date + liste triée (pour le mouvement du lendemain, week-ends inclus)
     const closeBy = {};
     retailHist.forEach(e => { if (e.btc_close) closeBy[e.date] = e.btc_close; });
     const priceDates = Object.keys(closeBy).sort();
-    const nextClose = d => {
-        for (const pd of priceDates) if (pd > d) return closeBy[pd];
-        return null;
-    };
-    // Flux ETF par date
-    const etfBy = {};
-    etfHist.forEach(e => { etfBy[e.date] = e.total ?? null; });
+    const idxOf = {}; priceDates.forEach((d,i)=>idxOf[d]=i);
+    const etfBy = {}; etfHist.forEach(e => { etfBy[e.date] = e.total ?? null; });
 
-    // Épine = jours qui ont retail ET prix (on a besoin des deux pour juger)
     const spine = retailHist
         .filter(e => e.retail_long != null && e.btc_close != null)
-        .sort((a, b) => a.date.localeCompare(b.date));
+        .sort((a,b)=>a.date.localeCompare(b.date));
 
     const days = spine.map(e => {
-        const close = e.btc_close;
-        const nxt   = nextClose(e.date);
-        const move  = nxt == null ? null : sign(nxt - close);   // mouvement du lendemain
-
         const etf = etfBy[e.date];
         const instBet = etf == null ? null : (etf > INST_TH ? 1 : etf < -INST_TH ? -1 : 0);
         const partBet = e.retail_long > 0.5 ? 1 : e.retail_long < 0.5 ? -1 : 0;
-
         const diverge = instBet != null && instBet !== 0 && partBet !== 0 && instBet !== partBet;
-        let winner = null; // 'inst' | 'part' | 'accord' | 'pending' | 'flat'
-        if (move == null)            winner = 'pending';
-        else if (diverge)            winner = (instBet === move) ? 'inst' : 'part';
-        else if (instBet != null && instBet !== 0 && partBet !== 0) winner = 'accord';
-        else                         winner = 'na';
-
-        return { date: e.date, close, retail: e.retail_long, etf, instBet, partBet, move, diverge, winner };
+        return { date:e.date, close:e.btc_close, retail:e.retail_long, etf, instBet, partBet, diverge };
     });
 
-    return days;
+    // ── Épisodes : runs de jours de désaccord, même camp institutionnel, week-ends pontés ──
+    const divDays = days.filter(d => d.diverge);
+    const episodes = [];
+    let cur = null;
+    divDays.forEach(d => {
+        if (cur && d.instBet === cur.instBet && dayDiff(cur.end, d.date) <= MERGE_GAP) {
+            cur.end = d.date; cur.days++;
+        } else {
+            cur = { start:d.date, end:d.date, instBet:d.instBet, partBet:d.partBet, days:1 };
+            episodes.push(cur);
+        }
+    });
+    // Réaction du prix : du DÉBUT du désaccord jusqu'à TAIL jours APRÈS sa fin.
+    // Tant que ces TAIL jours ne sont pas écoulés → "en cours" (on ne juge pas).
+    episodes.forEach(ep => {
+        const c0 = closeBy[ep.start];
+        const jIdx = idxOf[ep.end] + TAIL;
+        if (idxOf[ep.end] == null || jIdx >= priceDates.length) {
+            ep.pending = true; ep.pct = null; ep.followed = null; ep.judgeDate = null;
+        } else {
+            const c1 = closeBy[priceDates[jIdx]];
+            ep.pct = (c1 - c0) / c0 * 100;
+            ep.move = sign(ep.pct);
+            ep.judgeDate = priceDates[jIdx];
+            ep.followed = Math.abs(ep.pct) < DEAD ? 'flat' : (ep.move === ep.instBet ? 'gros' : 'foule');
+        }
+    });
+
+    return { days, episodes, closeBy, priceDates, idxOf };
 }
 
-function renderScore(days) {
-    const instWins = days.filter(d => d.winner === 'inst').length;
-    const partWins = days.filter(d => d.winner === 'part').length;
-    const duels    = instWins + partWins;
-    const accord   = days.filter(d => d.winner === 'accord').length;
+function fmtDate(d){ return new Date(d+'T00:00:00Z').toLocaleDateString('fr-FR',{day:'numeric',month:'short',timeZone:'UTC'}); }
 
-    const pct = duels > 0 ? Math.round(instWins / duels * 100) : null;
-    let punchHtml;
-    if (pct == null) {
-        punchHtml = `<div class="punch" style="color:var(--dim)">Pas encore<small>de jour de désaccord sur la période</small></div>`;
+function renderScore(M) {
+    const eps = M.episodes.filter(e => !e.pending);
+    const gros  = eps.filter(e => e.followed === 'gros').length;
+    const foule = eps.filter(e => e.followed === 'foule').length;
+    const decided = gros + foule;
+    const small = decided < 8;
+
+    let punch;
+    if (decided === 0) {
+        punch = `<div class="punch" style="color:var(--dim)">Pas encore d'épisode jugé<small>il faut quelques jours pour mesurer la suite du prix</small></div>`;
     } else {
-        const favorInst = pct >= 50;
-        punchHtml = `<div class="punch" style="color:${favorInst ? 'var(--inst)' : 'var(--part)'}">${favorInst ? pct : 100 - pct}%
-            <small>des duels gagnés par les ${favorInst ? 'institutions' : 'particuliers'} —
-            ${favorInst ? 'suivre les gros a payé' : 'la foule a eu raison ici'}</small></div>`;
+        const favorGros = gros >= foule;
+        const p = Math.round((favorGros ? gros : foule) / decided * 100);
+        punch = `<div class="punch" style="color:${favorGros?'var(--inst)':'var(--part)'}">
+            Le prix a suivi ${favorGros?'les gros 🏦':'la foule 🐟'}<br>${p}% du temps
+            <small>${small ? '⚠️ seulement '+decided+' épisodes — beaucoup trop tôt pour conclure' : 'sur '+decided+' épisodes jugés'}</small></div>`;
     }
 
     $('scoreboard').innerHTML = `
       <div class="score-card">
-        <div class="lbl">Duels gagnés (jours de désaccord)</div>
+        <div class="lbl">Le prix a suivi (désaccord + 5j)</div>
         <div class="duel">
-          <div class="side"><div class="emoji">🏦</div><div class="num inst">${instWins}</div><div class="who">institutions</div></div>
+          <div class="side"><div class="emoji">🏦</div><div class="num inst">${gros}</div><div class="who">les gros</div></div>
           <div class="vs">—</div>
-          <div class="side"><div class="emoji">🐟</div><div class="num part">${partWins}</div><div class="who">particuliers</div></div>
+          <div class="side"><div class="emoji">🐟</div><div class="num part">${foule}</div><div class="who">la foule</div></div>
         </div>
       </div>
-      <div class="score-card">
-        <div class="lbl">Le verdict</div>
-        ${punchHtml}
-      </div>
+      <div class="score-card"><div class="lbl">Le verdict</div>${punch}</div>
       <div class="score-card">
         <div class="lbl">Sur la période</div>
         <div style="font-size:13px;line-height:1.7;color:#cbd5e1">
-          ${days.length} jours suivis<br>
-          ${duels} duels · ${accord} jours d'accord
+          ${M.days.length} jours suivis<br>${M.episodes.length} épisodes de désaccord
         </div>
       </div>`;
 }
 
-// ── Frise canvas ──────────────────────────────────────────────
-let DAYS = [];
+function renderEpisodes(M) {
+    if (!M.episodes.length) { $('episodes').innerHTML = `<div class="ep"><div class="txt" style="color:var(--dim)">Aucun épisode de désaccord sur la période — institutions et particuliers étaient du même côté.</div></div>`; return; }
+    $('episodes').innerHTML = M.episodes.map((ep, i) => {
+        const instTxt = ep.instBet > 0 ? 'achetaient' : 'vendaient';
+        const partTxt = ep.partBet > 0 ? 'à la hausse' : 'à la baisse';
+        const range = ep.start === ep.end ? fmtDate(ep.start) : `${fmtDate(ep.start)} → ${fmtDate(ep.end)}`;
+        let outcome;
+        if (ep.pending) outcome = `<span class="pend">→ verdict en cours (5 jours pas encore écoulés depuis la fin)</span>`;
+        else {
+            const moveTxt = `<b class="${ep.pct>=0?'up':'down'}">${ep.pct>=0?'+':''}${ep.pct.toFixed(1)}%</b>`;
+            const who = ep.followed === 'gros' ? `<span class="follow gros">a suivi les gros 🏦</span>`
+                      : ep.followed === 'foule' ? `<span class="follow foule">a suivi la foule 🐟</span>`
+                      : `<span class="pend">match nul (mouvement négligeable)</span>`;
+            outcome = `· prix ${moveTxt} → ${who}`;
+        }
+        return `<div class="ep"><div class="pin">${i+1}</div><div class="txt">
+            <b>${range}</b> — 🏦 institutions <b>${instTxt}</b>, 🐟 particuliers <b>${partTxt}</b> ${outcome}</div></div>`;
+    }).join('');
+}
+
+let M = null;
 function drawChart() {
     const cv = $('chart');
     const cssW = cv.parentElement.clientWidth - 12;
-    const cssH = Math.max(360, Math.min(460, cssW * 0.42));
+    const cssH = Math.max(360, Math.min(470, cssW * 0.44));
     const dpr = window.devicePixelRatio || 1;
-    cv.width = cssW * dpr; cv.height = cssH * dpr;
-    cv.style.height = cssH + 'px';
-    const ctx = cv.getContext('2d');
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, cssW, cssH);
+    cv.width = cssW*dpr; cv.height = cssH*dpr; cv.style.height = cssH+'px';
+    const ctx = cv.getContext('2d'); ctx.scale(dpr,dpr); ctx.clearRect(0,0,cssW,cssH);
+    if (!M || !M.days.length) return;
 
-    if (!DAYS.length) return;
-    const N = DAYS.length;
-    const padL = 78, padR = 54, padTop = 14;
-    const rowWinY  = cssH - 44;
-    const rowPartY = cssH - 78;
-    const rowInstY = cssH - 110;
-    const dateY    = cssH - 16;
-    const priceTop = padTop, priceBot = rowInstY - 26;
+    const D = M.days, N = D.length;
+    const padL = 78, padR = 54, padTop = 30;
+    const rowPartY = cssH - 60, rowInstY = cssH - 92, dateY = cssH - 22;
+    const priceBot = rowInstY - 26, priceTop = padTop;
 
-    const closes = DAYS.map(d => d.close);
-    const lo = Math.min(...closes), hi = Math.max(...closes);
-    const span = (hi - lo) || 1;
-    const xAt = i => padL + (i + 0.5) / N * (cssW - padL - padR);
-    const yPrice = c => priceBot - (c - lo) / span * (priceBot - priceTop);
-    const colW = (cssW - padL - padR) / N;
+    const closes = D.map(d=>d.close);
+    const lo = Math.min(...closes), hi = Math.max(...closes), span = (hi-lo)||1;
+    const xAt = i => padL + (i+0.5)/N*(cssW-padL-padR);
+    const yPrice = c => priceBot - (c-lo)/span*(priceBot-priceTop);
+    const colW = (cssW-padL-padR)/N;
+    const idxByDate = {}; D.forEach((d,i)=>idxByDate[d.date]=i);
 
-    // Bandes verticales sur les jours de désaccord (duels)
-    DAYS.forEach((d, i) => {
-        if (d.diverge) {
-            ctx.fillStyle = 'rgba(56,189,248,0.05)';
-            ctx.fillRect(xAt(i) - colW / 2, priceTop, colW, (dateY - 6) - priceTop);
+    // Zones teintées : désaccord + 5j (couleur = sens du prix). Gris si en cours.
+    M.episodes.forEach(ep => {
+        const i0 = idxByDate[ep.start], ie = idxByDate[ep.end];
+        if (i0 == null || ie == null) return;
+        const x0 = xAt(i0);
+        if (ep.pending) {
+            const x1 = xAt(ie);
+            ctx.fillStyle = 'rgba(148,163,184,0.07)';
+            ctx.fillRect(x0, priceTop, Math.max(x1 - x0, colW * 0.6), priceBot - priceTop);
+        } else {
+            const x1 = xAt(Math.min(N-1, ie + TAIL));
+            ctx.fillStyle = ep.pct >= 0 ? 'rgba(74,222,128,0.13)' : 'rgba(248,113,113,0.13)';
+            ctx.fillRect(x0, priceTop, x1 - x0, priceBot - priceTop);
         }
     });
 
     // Axe prix (droite)
-    ctx.font = '10px -apple-system, sans-serif';
-    ctx.fillStyle = '#475569'; ctx.textAlign = 'left';
-    [hi, (hi + lo) / 2, lo].forEach(v => {
-        const y = yPrice(v);
-        ctx.strokeStyle = 'rgba(148,163,184,0.06)'; ctx.beginPath();
-        ctx.moveTo(padL, y); ctx.lineTo(cssW - padR, y); ctx.stroke();
-        ctx.fillText('$' + Math.round(v / 1000) + 'k', cssW - padR + 6, y + 3);
+    ctx.font='10px -apple-system,sans-serif'; ctx.textAlign='left';
+    [hi,(hi+lo)/2,lo].forEach(v=>{ const y=yPrice(v);
+        ctx.strokeStyle='rgba(148,163,184,0.06)'; ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(cssW-padR,y); ctx.stroke();
+        ctx.fillStyle='#475569'; ctx.fillText('$'+Math.round(v/1000)+'k', cssW-padR+6, y+3);
     });
 
-    // Courbe prix BTC
+    // Courbe prix
     ctx.beginPath();
-    DAYS.forEach((d, i) => { const x = xAt(i), y = yPrice(d.close); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
-    ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
-    ctx.shadowColor = 'rgba(245,158,11,0.4)'; ctx.shadowBlur = 8; ctx.stroke();
-    ctx.shadowBlur = 0;
-    DAYS.forEach((d, i) => {
-        ctx.beginPath(); ctx.arc(xAt(i), yPrice(d.close), 2, 0, 7); ctx.fillStyle = '#f59e0b'; ctx.fill();
+    D.forEach((d,i)=>{ const x=xAt(i),y=yPrice(d.close); i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+    ctx.strokeStyle='#f59e0b'; ctx.lineWidth=2; ctx.lineJoin='round';
+    ctx.shadowColor='rgba(245,158,11,0.4)'; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+
+    // Marqueurs d'épisodes sur la courbe
+    M.episodes.forEach((ep,k)=>{
+        const i0 = idxByDate[ep.start]; if (i0==null) return;
+        const x=xAt(i0); let y=yPrice(D[i0].close)-16; y=Math.max(priceTop+10,y);
+        ctx.beginPath(); ctx.moveTo(x, yPrice(D[i0].close)); ctx.lineTo(x, y+8);
+        ctx.strokeStyle='rgba(245,158,11,0.5)'; ctx.lineWidth=1; ctx.stroke();
+        ctx.beginPath(); ctx.arc(x,y,9,0,7); ctx.fillStyle='#f59e0b'; ctx.fill();
+        ctx.fillStyle='#0b1220'; ctx.font='800 11px -apple-system,sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(String(k+1), x, y+0.5);
+        ctx.textBaseline='alphabetic';
     });
 
-    // Libellés de lignes (gauche)
-    ctx.textAlign = 'right'; ctx.font = '600 11px -apple-system, sans-serif';
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillText('Institutions', padL - 10, rowInstY + 4);
-    ctx.fillText('Particuliers', padL - 10, rowPartY + 4);
-    ctx.fillText('Gagnant',      padL - 10, rowWinY + 4);
+    // Libellés lignes
+    ctx.textAlign='right'; ctx.font='600 11px -apple-system,sans-serif'; ctx.fillStyle='#94a3b8';
+    ctx.fillText('Institutions', padL-10, rowInstY+4);
+    ctx.fillText('Particuliers', padL-10, rowPartY+4);
 
-    const dotR = Math.max(3, Math.min(7, colW * 0.30));
-    const betColor = b => b == null ? '#334155' : b > 0 ? '#4ade80' : b < 0 ? '#f87171' : '#64748b';
-
-    DAYS.forEach((d, i) => {
-        const x = xAt(i);
-        // Institutions
-        ctx.beginPath(); ctx.arc(x, rowInstY, dotR, 0, 7);
-        if (d.instBet == null) { ctx.strokeStyle = '#334155'; ctx.lineWidth = 1.4; ctx.stroke(); }
-        else { ctx.fillStyle = betColor(d.instBet); ctx.fill(); }
-        // Particuliers
-        ctx.beginPath(); ctx.arc(x, rowPartY, dotR, 0, 7);
-        ctx.fillStyle = betColor(d.partBet); ctx.fill();
-        // Gagnant
-        if (d.winner === 'inst' || d.winner === 'part') {
-            if (colW >= 16) {
-                ctx.font = `${Math.min(16, colW * 0.7)}px -apple-system, sans-serif`;
-                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                ctx.fillText(d.winner === 'inst' ? '🏦' : '🐟', x, rowWinY + 1);
-                ctx.textBaseline = 'alphabetic';
-            } else {
-                ctx.beginPath(); ctx.arc(x, rowWinY, dotR, 0, 7);
-                ctx.fillStyle = d.winner === 'inst' ? '#38bdf8' : '#fb923c'; ctx.fill();
-            }
-        } else if (d.winner === 'accord') {
-            ctx.beginPath(); ctx.arc(x, rowWinY, 1.6, 0, 7); ctx.fillStyle = '#475569'; ctx.fill();
-        }
+    const dotR = Math.max(3, Math.min(7, colW*0.30));
+    const col = b => b==null?'#334155': b>0?'#4ade80': b<0?'#f87171':'#64748b';
+    D.forEach((d,i)=>{ const x=xAt(i);
+        ctx.beginPath(); ctx.arc(x,rowInstY,dotR,0,7);
+        if (d.instBet==null){ ctx.strokeStyle='#334155'; ctx.lineWidth=1.4; ctx.stroke(); }
+        else { ctx.fillStyle=col(d.instBet); ctx.fill(); }
+        ctx.beginPath(); ctx.arc(x,rowPartY,dotR,0,7); ctx.fillStyle=col(d.partBet); ctx.fill();
     });
 
-    // Dates (espacées)
-    ctx.fillStyle = '#475569'; ctx.font = '9px -apple-system, sans-serif'; ctx.textAlign = 'center';
-    const step = Math.ceil(N / Math.min(N, Math.floor((cssW - padL - padR) / 60)));
-    DAYS.forEach((d, i) => {
-        if (i % step === 0 || i === N - 1) {
-            const dt = new Date(d.date + 'T00:00:00Z');
-            const lbl = dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'UTC' });
-            ctx.fillText(lbl, xAt(i), dateY);
-        }
-    });
+    // Dates
+    ctx.fillStyle='#475569'; ctx.font='9px -apple-system,sans-serif'; ctx.textAlign='center';
+    const step = Math.max(1, Math.ceil(N/Math.floor((cssW-padL-padR)/60)));
+    D.forEach((d,i)=>{ if (i%step===0 || i===N-1) ctx.fillText(fmtDate(d.date), xAt(i), dateY); });
 }
 
 async function init() {
     try {
-        const [retail, etf] = await Promise.all([
-            getJSON('data/retail_history.json'),
-            getJSON('data/etf_flows.json'),
-        ]);
-        DAYS = build(retail.history || [], etf.history || []);
-        if (!DAYS.length) { $('loading').textContent = 'Pas encore assez de données.'; return; }
-        $('loading').style.display = 'none';
-        renderScore(DAYS);
-        drawChart();
-    } catch (e) {
-        $('loading').className = 'err';
-        $('loading').textContent = 'Erreur de chargement : ' + e.message;
-        console.error(e);
+        const [retail, etf] = await Promise.all([ getJSON('data/retail_history.json'), getJSON('data/etf_flows.json') ]);
+        M = build(retail.history||[], etf.history||[]);
+        if (!M.days.length){ $('loading').textContent='Pas encore assez de données.'; return; }
+        $('loading').style.display='none';
+        renderScore(M); renderEpisodes(M); drawChart();
+    } catch(e) {
+        $('loading').className='err'; $('loading').textContent='Erreur de chargement : '+e.message; console.error(e);
     }
 }
-window.addEventListener('resize', () => { if (DAYS.length) drawChart(); });
+window.addEventListener('resize', ()=>{ if (M&&M.days.length) drawChart(); });
 init();
 </script>
 </body>
