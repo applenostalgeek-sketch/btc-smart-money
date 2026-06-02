@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-01 13:43 UTC",
+  "last_updated": "2026-06-02 12:08 UTC",
   "source": "Binance global/top LongShortAccountRatio + CryptoCompare (close BTC)",
   "history": [
     {
@@ -228,7 +228,11 @@
     },
     {
       "date": "2026-06-01",
-      "btc_close": 71691.58
+      "btc_close": 71329.41
+    },
+    {
+      "date": "2026-06-02",
+      "btc_close": 69379.72
     }
   ]
 }
