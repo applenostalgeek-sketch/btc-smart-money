@@ -1,43 +1,28 @@
 {
-  "last_updated": "2026-06-09 11:21 UTC",
+  "last_updated": "2026-06-10 11:41 UTC",
   "source": "Farside Investors (via Cloudflare Worker proxy) + iShares extension",
   "latest": {
-    "date": "2026-06-08",
-    "ibit": -232.9,
-    "fbtc": 59.4,
-    "bitb": 14.1,
-    "arkb": 63.1,
+    "date": "2026-06-09",
+    "ibit": -61.6,
+    "fbtc": -20.2,
+    "bitb": 0.0,
+    "arkb": 0.0,
     "btco": 0.0,
     "ezbc": 0.0,
     "brrr": 0.0,
     "hodl": 0.0,
     "btcw": 0.0,
-    "msbt": 4.9,
+    "msbt": 0.0,
     "gbtc": 0.0,
-    "btc": 0.0,
-    "total": -91.4
+    "btc": 4.4,
+    "total": -77.4
   },
   "signal": "strong_outflow",
-  "net_7d": -1938.7,
-  "net_30d": -4686.4,
+  "net_7d": -1890.8,
+  "net_30d": -4500.6,
   "direction": "outflow",
-  "streak": 2,
+  "streak": 3,
   "history": [
-    {
-      "date": "2026-01-29",
-      "ibit": -317.8,
-      "fbtc": -168.0,
-      "bitb": -88.9,
-      "arkb": -71.6,
-      "btco": -8.4,
-      "ezbc": 0.0,
-      "brrr": 0.0,
-      "hodl": -6.5,
-      "btcw": 0.0,
-      "gbtc": -119.4,
-      "btc": -37.2,
-      "total": -817.8
-    },
     {
       "date": "2026-01-30",
       "ibit": -528.3,
@@ -1415,6 +1400,22 @@
       "gbtc": 0.0,
       "btc": 0.0,
       "total": -91.4
+    },
+    {
+      "date": "2026-06-09",
+      "ibit": -61.6,
+      "fbtc": -20.2,
+      "bitb": 0.0,
+      "arkb": 0.0,
+      "btco": 0.0,
+      "ezbc": 0.0,
+      "brrr": 0.0,
+      "hodl": 0.0,
+      "btcw": 0.0,
+      "msbt": 0.0,
+      "gbtc": 0.0,
+      "btc": 4.4,
+      "total": -77.4
     }
   ]
 }
