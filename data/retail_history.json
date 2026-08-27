@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-08 12:37 UTC",
+  "last_updated": "2026-08-27 18:58 UTC",
   "source": "Binance global/top LongShortAccountRatio + CryptoCompare (close BTC)",
   "history": [
     {
@@ -257,6 +257,156 @@
     {
       "date": "2026-06-08",
       "btc_close": 63434.93
+    },
+    {
+      "date": "2026-07-29",
+      "retail_long": 0.6341,
+      "top_long": 0.646
+    },
+    {
+      "date": "2026-07-30",
+      "retail_long": 0.6093,
+      "top_long": 0.6266
+    },
+    {
+      "date": "2026-07-31",
+      "retail_long": 0.5563,
+      "top_long": 0.5734
+    },
+    {
+      "date": "2026-08-01",
+      "retail_long": 0.6882,
+      "top_long": 0.7031
+    },
+    {
+      "date": "2026-08-02",
+      "retail_long": 0.6869,
+      "top_long": 0.6933
+    },
+    {
+      "date": "2026-08-03",
+      "retail_long": 0.6599,
+      "top_long": 0.6625
+    },
+    {
+      "date": "2026-08-04",
+      "retail_long": 0.5997,
+      "top_long": 0.614
+    },
+    {
+      "date": "2026-08-05",
+      "retail_long": 0.5611,
+      "top_long": 0.5696
+    },
+    {
+      "date": "2026-08-06",
+      "retail_long": 0.5342,
+      "top_long": 0.5472
+    },
+    {
+      "date": "2026-08-07",
+      "retail_long": 0.5484,
+      "top_long": 0.5671
+    },
+    {
+      "date": "2026-08-08",
+      "retail_long": 0.5244,
+      "top_long": 0.5393
+    },
+    {
+      "date": "2026-08-09",
+      "retail_long": 0.534,
+      "top_long": 0.5521
+    },
+    {
+      "date": "2026-08-10",
+      "retail_long": 0.5378,
+      "top_long": 0.5558
+    },
+    {
+      "date": "2026-08-11",
+      "retail_long": 0.616,
+      "top_long": 0.6341
+    },
+    {
+      "date": "2026-08-12",
+      "retail_long": 0.6434,
+      "top_long": 0.6563
+    },
+    {
+      "date": "2026-08-13",
+      "retail_long": 0.6495,
+      "top_long": 0.6557
+    },
+    {
+      "date": "2026-08-14",
+      "retail_long": 0.6514,
+      "top_long": 0.6582
+    },
+    {
+      "date": "2026-08-15",
+      "retail_long": 0.6756,
+      "top_long": 0.685
+    },
+    {
+      "date": "2026-08-16",
+      "retail_long": 0.6716,
+      "top_long": 0.6782
+    },
+    {
+      "date": "2026-08-17",
+      "retail_long": 0.6896,
+      "top_long": 0.696
+    },
+    {
+      "date": "2026-08-18",
+      "retail_long": 0.5975,
+      "top_long": 0.606
+    },
+    {
+      "date": "2026-08-19",
+      "retail_long": 0.5794,
+      "top_long": 0.5972
+    },
+    {
+      "date": "2026-08-20",
+      "retail_long": 0.5186,
+      "top_long": 0.5299
+    },
+    {
+      "date": "2026-08-21",
+      "retail_long": 0.4886,
+      "top_long": 0.5108
+    },
+    {
+      "date": "2026-08-22",
+      "retail_long": 0.5095,
+      "top_long": 0.5208
+    },
+    {
+      "date": "2026-08-23",
+      "retail_long": 0.5018,
+      "top_long": 0.5318
+    },
+    {
+      "date": "2026-08-24",
+      "retail_long": 0.5169,
+      "top_long": 0.5362
+    },
+    {
+      "date": "2026-08-25",
+      "retail_long": 0.4858,
+      "top_long": 0.5052
+    },
+    {
+      "date": "2026-08-26",
+      "retail_long": 0.5002,
+      "top_long": 0.5213
+    },
+    {
+      "date": "2026-08-27",
+      "retail_long": 0.5206,
+      "top_long": 0.535
     }
   ]
 }
