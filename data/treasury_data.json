@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-24 13:25 UTC",
+  "last_updated": "2026-09-25 13:26 UTC",
   "source": "CoinGecko Public API \u2014 /api/v3/companies/public_treasury/bitcoin",
   "total_companies": 15,
   "companies": [
@@ -7,91 +7,91 @@
       "name": "MicroStrategy",
       "ticker": "MSTR",
       "btc": 846000,
-      "usd_value": 70921351129
+      "usd_value": 71276229629
     },
     {
       "name": "Twenty One Capital",
       "ticker": "XXI",
       "btc": 43514,
-      "usd_value": 3647838857
+      "usd_value": 3666092028
     },
     {
       "name": "Metaplanet",
       "ticker": "3350",
       "btc": 43000,
-      "usd_value": 3604749525
+      "usd_value": 3622787085
     },
     {
       "name": "Marathon",
       "ticker": "MARA",
       "btc": 35303,
-      "usd_value": 2959499360
+      "usd_value": 2974308197
     },
     {
       "name": "Bitcoin Standard Treasury Company",
       "ticker": "CEPO",
       "btc": 30021,
-      "usd_value": 2516701988
+      "usd_value": 2529295141
     },
     {
       "name": "Strive",
       "ticker": "ASST",
       "btc": 26354,
-      "usd_value": 2209330026
+      "usd_value": 2220385142
     },
     {
       "name": "Galaxy Digital Holdings Ltd",
       "ticker": "GLXY",
       "btc": 25723,
-      "usd_value": 2156394699
+      "usd_value": 2167184935
     },
     {
       "name": "Bullish",
       "ticker": "BLSH",
       "btc": 23300,
-      "usd_value": 1953271254
+      "usd_value": 1963045095
     },
     {
       "name": "Space Exploration Technologies Corp.",
       "ticker": "SPCX",
       "btc": 18712,
-      "usd_value": 1568652863
+      "usd_value": 1576502138
     },
     {
       "name": "Coinbase",
       "ticker": "COIN",
       "btc": 16492,
-      "usd_value": 1382547190
+      "usd_value": 1389465223
     },
     {
       "name": "Riot",
       "ticker": "RIOT",
       "btc": 15680,
-      "usd_value": 1314476106
+      "usd_value": 1321053523
     },
     {
       "name": "Hut 8 Mining Corp",
       "ticker": "HUT",
       "btc": 13696,
-      "usd_value": 1148154640
+      "usd_value": 1153899812
     },
     {
       "name": "CleanSpark",
       "ticker": "CLSK",
       "btc": 13470,
-      "usd_value": 1129208747
+      "usd_value": 1134859117
     },
     {
       "name": "Tesla",
       "ticker": "TSLA",
       "btc": 11509,
-      "usd_value": 964815402
+      "usd_value": 969643176
     },
     {
       "name": "Trump Media & Technology Group Corp.",
       "ticker": "DJT",
       "btc": 9542,
-      "usd_value": 799932482
+      "usd_value": 803935210
     }
   ]
 }
