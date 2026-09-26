@@ -1,11 +1,11 @@
 {
-  "last_updated": "2026-09-25 13:26 UTC",
-  "report_date": "2026-09-15",
-  "signal": "covering",
-  "signal_desc": "HF nets courts -6,354 mais couvrent massivement (+1,538) \u2014 retournement haussier possible",
-  "inst_net": -6354,
-  "inst_net_change": 1538,
-  "hf_net": -6354,
+  "last_updated": "2026-09-26 12:48 UTC",
+  "report_date": "2026-09-22",
+  "signal": "short_heavy",
+  "signal_desc": "HF nets courts -7,953 contrats, ajoutent des shorts (-1,599)",
+  "inst_net": -7953,
+  "inst_net_change": -1599,
+  "hf_net": -7953,
   "history": [
     {
       "date": "2025-01-07",
@@ -718,6 +718,14 @@
       "inst_short": 1768,
       "hf_net": -6354,
       "inst_net_change": 1538
+    },
+    {
+      "date": "2026-09-22",
+      "inst_net": -7953,
+      "inst_long": 4962,
+      "inst_short": 1791,
+      "hf_net": -7953,
+      "inst_net_change": -1599
     }
   ],
   "source": "CFTC Traders in Financial Futures (TFF) \u2014 Official US Government Data",
