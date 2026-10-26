@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-25 13:03 UTC",
+  "last_updated": "2026-10-26 14:58 UTC",
   "source": "Farside Investors (via Cloudflare Worker proxy) + iShares extension",
   "latest": {
     "date": "2026-10-23",
@@ -10,6 +10,7 @@
     "btco": 0.0,
     "ezbc": 0.0,
     "brrr": 0.0,
+    "hodl": 0.0,
     "btcw": 0.0,
     "msbt": 4.2,
     "gbtc": 0.0,
@@ -1453,6 +1454,7 @@
       "btco": 0.0,
       "ezbc": 0.0,
       "brrr": 0.0,
+      "hodl": 0.0,
       "btcw": 0.0,
       "msbt": 4.2,
       "gbtc": 0.0,
