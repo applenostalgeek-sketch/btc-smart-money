@@ -1,8 +1,9 @@
 {
-  "last_updated": "2026-11-22 16:03 UTC",
+  "last_updated": "2026-11-23 19:58 UTC",
   "source": "Farside Investors (via Cloudflare Worker proxy) + iShares extension",
   "latest": {
     "date": "2026-11-20",
+    "ibit": -544.7,
     "fbtc": -72.4,
     "bitb": -7.0,
     "arkb": 0.0,
@@ -14,11 +15,11 @@
     "msbt": 2.3,
     "gbtc": -32.8,
     "btc": -12.9,
-    "total": -124.5
+    "total": -669.2
   },
   "signal": "strong_outflow",
-  "net_7d": -1714.8,
-  "net_30d": -3721.9,
+  "net_7d": -2259.5,
+  "net_30d": -4266.6,
   "direction": "outflow",
   "streak": 4,
   "history": [
@@ -1446,6 +1447,7 @@
     },
     {
       "date": "2026-11-20",
+      "ibit": -544.7,
       "fbtc": -72.4,
       "bitb": -7.0,
       "arkb": 0.0,
@@ -1457,7 +1459,7 @@
       "msbt": 2.3,
       "gbtc": -32.8,
       "btc": -12.9,
-      "total": -124.5
+      "total": -669.2
     }
   ]
 }
